@@ -1,0 +1,280 @@
+// Sử dụng cho Component AuthBase
+.auth {
+    min-height: 100vh;
+    width: 100%;
+    margin: auto;
+    overflow: hidden;
+    color: white;
+    background: #F0F4FC;
+
+
+
+    &__container {
+        box-sizing: border-box;
+        height: 100vh;
+        width: 100%;
+        margin: auto;
+        justify-content: space-between;
+        background: rgb(100, 100, 100);
+        box-shadow: 0px 5px 35px -15px #2e2b38;
+
+
+    }
+
+    &__alert {
+        animation: fadeInOut 1s ease-in-out;
+        width: 80%;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1000;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    @keyframes fadeInOut {
+        0% {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        15% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        85% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        100% {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+    }
+
+    &__intro {
+        height: 100%;
+        width: 50%;
+        padding: 40px;
+        flex-direction: column;
+        background: #1C2B38;
+        text-align: justify;
+    }
+
+    &__home-link {
+        // Style cho link trở về trang chủ
+        color: white;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    &__intro-content {
+        flex-grow: 1;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    &__title {
+        font-size: 50px;
+        margin: 0;
+    }
+
+    &__subtitle {
+        font-size: 50px;
+        font-weight: bold;
+        color: #FFA432;
+        margin: 0;
+    }
+
+    &__description {
+        font-size: 18px;
+        margin: 20px 0;
+        opacity: 0.8;
+    }
+
+    &__switch-btn {
+        text-decoration: none;
+        padding: 0.5rem 2rem;
+        width: 12rem;
+        color: #ffffff;
+        border-radius: 10px;
+        border: 1px solid #2DB6A4;
+        text-align: center;
+    }
+
+    &__illustration {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        display: block;
+    }
+
+    &__form-container {
+        flex-basis: 50%;
+        height: 100%;
+        margin: auto;
+        color: black;
+        flex-direction: column;
+        background-color: #FFFFFF;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+
+        &--login {
+            gap: 1.5em;
+        }
+
+        &--register {
+            gap: 1rem;
+        }
+    }
+
+    &__header {
+        text-align: center;
+    }
+
+    &__logo {
+        width: 60px;
+        padding-bottom: 0.1rem;
+    }
+
+    &__heading {
+        font-size: 42px;
+        font-weight: bold;
+    }
+
+    &__form {
+        width: 50%;
+        gap: 0.5rem;
+    }
+
+    &__separator {
+        text-align: center;
+        margin: 1rem 0;
+    }
+
+    &__switch-message {
+        margin-top: 1em;
+    }
+
+    &__link {
+        color: #4461F2;
+    }
+
+    // Các nút
+    .btn--submit {
+        padding: 1rem 0;
+        color: #FFFFFF;
+        font-size: large;
+        font-weight: 600;
+        border-radius: 10px;
+        background-color: #4461F2;
+        border: none;
+        cursor: pointer;
+
+        &:hover {
+            background-color: #0e30da;
+        }
+    }
+
+    .checkbox-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .forgotPassword {
+            font-size: 14px;
+            color: #6C737F;
+            text-decoration: none;
+            text-align: right;
+        }
+    }
+}
+
+// Media Queries 
+@media screen and (max-width: 1920px) {
+    .auth {
+        &__intro {
+            padding: 40px;
+
+            &-content {
+                gap: 5px;
+            }
+        }
+
+        &__title {
+            font-size: 40px;
+        }
+
+        &__subtitle {
+            font-size: 40px;
+        }
+
+        &__description {
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        &__form {
+            gap: 0.1rem;
+
+            .btn--submit {
+                margin-top: 1rem;
+                padding: 0.8rem 0;
+            }
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .auth {
+        &__intro {
+            display: none;
+        }
+
+        &__container {
+            height: max-content;
+            width: 100%;
+            margin: auto;
+
+            &--login {
+                height: 100vh;
+            }
+        }
+
+        &__form-container {
+            flex-basis: 100%;
+            padding: 20px 0;
+        }
+
+        &__heading {
+            font-size: 36px;
+        }
+
+        &__form {
+            width: 90%;
+
+            .btn--register {
+                width: 100%;
+                padding: 1rem;
+                font-size: large;
+                font-weight: 600;
+                border-radius: 10px;
+                background-color: #4461F2;
+                color: #FFFFFF;
+                border: none;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: #0e30da;
+                }
+            }
+        }
+    }
+}

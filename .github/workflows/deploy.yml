@@ -1,0 +1,167 @@
+name: Deploy Fullstack to EC2
+
+on:
+  push:
+    branches:
+      - main  # Mỗi khi push lên nhánh main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # 3. Cache node_modules based on package.json
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: npm-cache-${{ hashFiles('package.json') }}
+          restore-keys: |
+            npm-cache-
+
+      # 4. Install dependencies
+      - name: Install dependencies
+        run: |
+          npm install --prefer-offline --no-audit --no-fund
+          
+      # 5. Build frontend locally (nhanh hơn nhiều)
+      - name: Build frontend
+        env:
+          CI: false
+          GENERATE_SOURCEMAP: false
+        run: |
+          npm run build
+          tar -czf build.tar.gz build/
+          
+      # 6. Copy build artifacts and nginx config to EC2 
+      - name: Copy build and config to EC2
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: 54.219.205.247
+          username: ec2-user
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "build.tar.gz,fix-nginx-config.conf"
+          target: "/home/ec2-user/"
+
+      # 6.5. Verify file transfer
+      - name: Verify file transfer
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: 54.219.205.247
+          username: ec2-user
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          timeout: 60s
+          script: |
+            echo "📋 Checking transferred files..."
+            ls -la /home/ec2-user/build.tar.gz
+            echo "📦 File size: $(du -h /home/ec2-user/build.tar.gz)"
+
+      # 7. Deploy trên EC2 (chỉ extract và copy, rất nhanh)
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: 54.219.205.247
+          username: ec2-user
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          timeout: 300s
+          script: |
+            set -e
+            echo "🚀 Starting deployment..."
+            
+            # Check if build file exists
+            if [ ! -f "/home/ec2-user/build.tar.gz" ]; then
+              echo "❌ Build file not found!"
+              exit 1
+            fi
+            
+            cd /home/ec2-user
+            echo "📦 Extracting build files..."
+            tar -xzf build.tar.gz
+            
+            # Check if Nginx is installed and running
+            if ! command -v nginx &> /dev/null; then
+              echo "📋 Installing Nginx..."
+              sudo yum update -y
+              sudo yum install -y nginx
+              sudo systemctl enable nginx
+              sudo systemctl start nginx
+            fi
+            
+            # Create backup directory if not exists
+            sudo mkdir -p /home/ec2-user/backups
+            
+            # Backup current deployment (if exists)
+            if [ -d "/usr/share/nginx/html" ] && [ "$(ls -A /usr/share/nginx/html)" ]; then
+              echo "💾 Creating backup..."
+              sudo cp -r /usr/share/nginx/html /home/ec2-user/backups/html.backup.$(date +%Y%m%d_%H%M%S) 2>/dev/null || true
+            fi
+            
+            # Backup current nginx config
+            if [ -f "/etc/nginx/conf.d/default.conf" ]; then
+              echo "💾 Backing up current nginx config..."
+              sudo cp /etc/nginx/conf.d/default.conf /home/ec2-user/backups/nginx.backup.$(date +%Y%m%d_%H%M%S).conf 2>/dev/null || true
+            fi
+            
+            # # Update nginx configuration
+            echo "⚙️ Updating Nginx configuration..."
+            sudo cp fix-nginx-config.conf /etc/nginx/conf.d/default.conf
+            
+            # Ensure nginx html directory exists
+            sudo mkdir -p /usr/share/nginx/html
+            
+            # Deploy new build
+            echo "🔄 Deploying new build..."
+            sudo rm -rf /usr/share/nginx/html/*
+            sudo cp -r build/* /usr/share/nginx/html/
+            
+            # Set proper permissions
+            sudo chown -R nginx:nginx /usr/share/nginx/html 2>/dev/null || sudo chown -R ec2-user:ec2-user /usr/share/nginx/html
+            sudo chmod -R 755 /usr/share/nginx/html
+            
+            # Test nginx configuration
+            echo "🔧 Testing Nginx configuration..."
+            if sudo nginx -t; then
+              echo "✅ Nginx configuration is valid"
+            else
+              echo "❌ Nginx configuration has errors!"
+              echo "Restoring backup configuration..."
+              sudo cp /home/ec2-user/backups/nginx.backup.*.conf /etc/nginx/conf.d/default.conf 2>/dev/null || true
+              exit 1
+            fi
+            
+            echo "🔄 Reloading Nginx..."
+            sudo systemctl reload nginx || sudo systemctl restart nginx
+            
+            # Verify nginx is running
+            if sudo systemctl is-active --quiet nginx; then
+              echo "✅ Nginx is running"
+            else
+              echo "⚠️ Starting Nginx..."
+              sudo systemctl start nginx
+            fi
+            
+            # Test API connectivity
+            echo "🔍 Testing API connectivity..."
+            if curl -s --connect-timeout 5 http://100.90.83.88:3001/health > /dev/null 2>&1; then
+              echo "✅ Backend is accessible"
+            else
+              echo "⚠️ Backend connection test failed - please ensure VPN is active"
+            fi
+            
+            # Cleanup
+            echo "🧹 Cleaning up..."
+            rm -rf build/ build.tar.gz fix-nginx-config.conf
+            
+            echo "✅ Deployment completed successfully!"
+            echo "🌐 Website should be accessible at: http://54.219.205.247"
+            echo "🌐 Domain: http://tourguideeeee.fun"

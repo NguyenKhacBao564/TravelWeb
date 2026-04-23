@@ -1,0 +1,123 @@
+@import "../../styles/variables.scss";
+.filterTour_card {
+    background-color: #fff;
+    border: 1px solid #dbdbdb;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.151);
+    h3 {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #333;
+    }
+
+    .filter-section {
+        margin-bottom: 20px;
+        p {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .budget-option {
+            display: block;
+            width: 95%;
+            padding: 5px 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            font-weight: bold;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #555;
+            cursor: pointer;
+
+            &:hover {
+                background-color: #DFEFFE;
+                border-color: #2F5FA4;
+                color: #3060A4;
+            }
+
+            &.selected {
+                background-color: #3060A4;
+                color: white;
+                border-color: #3060A4;
+            }
+        }
+
+       .dropdown-toggle{
+            background-color: #F5F5F5 !important; /* Màu nền tùy chỉnh */
+        }
+        .dropdown {
+            width: 100%;
+            padding: 0;
+            border: 1px solid #CECECE; 
+            border-radius: 4px;
+            // font-size: 0.9rem;
+        }
+
+        .date-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9rem;
+
+            &:focus {
+                outline: none;
+                border-color: #007bff;
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            }
+        }
+    }
+
+    .apply-button {
+        width: 100%;
+        padding: $spacing-xs;
+        background-color: $primary-color;
+        color: white;
+        border-radius: 4px;
+        font-weight: 500;
+        transition: background-color 0.3s;
+        &:hover {
+            background-color: darken($primary-color, 5%);
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .filterTour_card {
+        padding: 15px;
+
+        h3 {
+            font-size: 1.2rem;
+        }
+
+        .filter-section {
+            margin-bottom: 15px;
+
+            p {
+                font-size: 0.9rem;
+            }
+
+            .budget-option {
+                padding: 6px 10px;
+                font-size: 0.85rem;
+            }
+
+            .dropdown,
+            .date-input {
+                padding: 6px;
+                font-size: 0.85rem;
+            }
+        }
+
+        .apply-button {
+            padding: 8px;
+            font-size: 0.9rem;
+        }
+    }
+}

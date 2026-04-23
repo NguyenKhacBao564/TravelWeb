@@ -1,0 +1,16 @@
+
+.accordion-button:focus {
+    background-color: rgb(212, 212, 212) !important;
+    box-shadow: none;
+    outline: none;
+}
+
+.accordion-button {
+  background-color: #EEEEEE; // màu nền mới
+  color: #000; // màu chữ, nếu cần
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: #EEEEEE; // màu nền khi mở
+  color: #000;
+}

@@ -1,0 +1,27 @@
+.input-field-icon2 {
+    margin-bottom: 0.9rem;
+    .form-label {
+      margin-bottom: 0.3rem;
+      font-weight: 600;
+      color: #5E5E5E;
+    }
+    
+    .input-group {
+        border: 1px solid #CECECE;
+        border-radius: 5px;
+        padding: 0.3rem;
+      .form-control {
+        border: none;
+        width:  50%;
+      }
+      
+      .icon-custom{
+        color: #273B4A;
+      }
+      &:focus-within {
+        border: 1px solid #747474;
+
+      }
+    }
+  } 
+  

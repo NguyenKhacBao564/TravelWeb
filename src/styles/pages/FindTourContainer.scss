@@ -1,0 +1,57 @@
+@import '../_variables';
+
+.findTour_Page{
+
+    overflow-y: scroll;
+    height: 100vh;
+    min-height: 100vh;
+    .findTour_Container{
+        margin-top: calc(#{$navbar-height} + 20px);
+        min-height: 100vh;
+        .filterTour-card{
+            position: sticky;
+            top: calc(#{$navbar-height} + 50px); /* Khoảng cách từ top để tránh bị Navbar che khuất */
+            z-index: 1; /* Đảm bảo card không bị các phần tử khác đè lên */
+            background-color: transparent;
+            border: none;
+            
+        }   
+        
+        .searchText{
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 20px;
+            .highlight{
+                color: $primary-color;
+            }
+        }
+
+
+        .sort_Area{
+            flex-basis: 40%;
+            align-items: flex-end;
+            .sort-text{
+                flex-basis: 50%;
+                font-size: 1rem;
+                color: #333;
+                margin-bottom: 10px;
+            }
+            .dropdown-btn{
+                
+                border: 1px solid #CECECE;
+                border-radius: 4px;
+                width: 100%;
+                text-align: left;
+                font-size: 0.9rem;
+               
+            }
+        }
+
+        .filterTour_List{
+            border-top: 1px solid #CECECE;
+            padding-top: 20px;
+        }
+       
+    }
+}

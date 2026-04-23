@@ -1,0 +1,217 @@
+@import '../admin/_variables';
+
+
+.profile-page {
+  padding: $spacing-lg 0;
+  
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-xl;
+    
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: $text-color;
+    }
+
+    .logout-button {
+      background-color: $accent-color;
+      color: white;
+      border: none;
+      padding: $spacing-sm $spacing-lg;
+      border-radius: $border-radius-sm;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: adjust-color($accent-color, $lightness: -10%);
+      }
+    }
+  }
+
+  .profile-card {
+    background-color: white;
+    border-radius: $border-radius-md;
+    box-shadow: $shadow-md;
+    overflow: hidden;
+    margin-bottom: $spacing-xl;
+
+    .profile-header {
+      padding: $spacing-xl;
+      display: flex;
+      align-items: center;
+      gap: $spacing-md;
+      border-bottom: 1px solid $border-color;
+
+      .profile-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: $border-radius-full;
+        border: 2px solid $border-color;
+        object-fit: cover;
+      }
+
+      .profile-info {
+        h3 {
+          font-size: 1.4rem;
+          margin-bottom: $spacing-xs;
+          color: $text-color;
+        }
+
+        .avatar-button {
+          background-color: $accent-color;
+          color: white;
+          border: none;
+          padding: $spacing-xs $spacing-md;
+          border-radius: $border-radius-sm;
+          cursor: pointer;
+          font-size: 12px;
+          transition: background-color 0.2s;
+
+          &:hover {
+            background-color: adjust-color($accent-color, $lightness: -10%);
+          }
+        }
+      }
+
+      .account-status {
+        margin-left: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        
+        .status-label {
+          font-size: 14px;
+          color: $text-light;
+          margin-bottom: $spacing-xs;
+        }
+
+        .status-badge {
+          padding: $spacing-xs $spacing-md;
+          border-radius: $border-radius-sm;
+          font-size: 12px;
+          font-weight: 500;
+
+          &.status-active {
+            background-color: adjust-color($success-color, $lightness: 35%);
+            color: adjust-color($success-color, $lightness: -10%);
+          }
+
+          &.status-inactive {
+            background-color: adjust-color($danger-color, $lightness: 35%);
+            color: adjust-color($danger-color, $lightness: -10%);
+          }
+        }
+      }
+    }
+
+    .profile-content {
+      padding: $spacing-xl;
+
+      .profile-section {
+        margin-bottom: $spacing-xl;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        h4 {
+          font-size: 1.1rem;
+          color: $text-color;
+          margin-bottom: $spacing-lg;
+        }
+
+        .input-group {
+          margin-bottom: $spacing-md;
+
+          label {
+            display: block;
+            font-size: 14px;
+            color: $text-light;
+            margin-bottom: $spacing-xs;
+          }
+
+          input, select {
+            width: 100%;
+            padding: $spacing-sm;
+            border: 1px solid $border-color;
+            border-radius: $border-radius-sm;
+            font-size: 14px;
+            color: $text-color;
+            transition: border-color 0.2s;
+
+            &:focus {
+              outline: none;
+              border-color: $primary-color;
+            }
+          }
+
+          .input-with-icon {
+            position: relative;
+
+            .input-icon {
+              position: absolute;
+              left: $spacing-sm;
+              top: 50%;
+              transform: translateY(-50%);
+              color: $text-light;
+            }
+
+            input, select {
+              padding-left: $spacing-xl;
+            }
+          }
+        }
+      }
+    }
+
+    .profile-actions {
+      padding: $spacing-lg $spacing-xl;
+      display: flex;
+      justify-content: flex-end;
+      gap: $spacing-md;
+      border-top: 1px solid $border-color;
+
+      button {
+        padding: $spacing-sm $spacing-xl;
+        border-radius: $border-radius-sm;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &.lock-button {
+          background-color: white;
+          border: 1px solid $danger-color;
+          color: $danger-color;
+
+          &:hover {
+            background-color: $danger-color;
+            color: white;
+          }
+        }
+
+        &.save-button {
+          background-color: white;
+          border: 1px solid $primary-color;
+          color: $primary-color;
+          transition: background 0.2s, color 0.2s;
+        }
+        &.save-button.changed {
+          &:hover {
+            background-color: $primary-color;
+            color: white;
+          }
+        }
+        &.save-button:not(.changed) {
+          &:hover {
+            background-color: white;
+            color: $primary-color;
+          }
+        }
+      }
+    }
+  }
+}

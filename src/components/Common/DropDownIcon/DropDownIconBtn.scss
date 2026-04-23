@@ -1,0 +1,37 @@
+.drop-down-icon-btn{
+    
+    &--label{
+        margin-bottom: 0.3rem;
+        font-weight: 600;
+        color: #5E5E5E;
+    }
+    .input-group{
+        border: 1px solid #CECECE;
+        border-radius: 5px;
+        .dropdown-toggle{
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            width: 100%;
+            
+            .icon-text-wrapper {
+                display: flex;
+                align-items: center;
+                gap: 15px; /* Control the space between icon and text */
+                
+                .icon-custom {
+                    flex-shrink: 0;
+                }
+                
+                .dropdown-text {
+                    font-weight: 500;
+                }
+            }
+        }
+    }
+    
+    /* Override Bootstrap's dropdown toggle spacing */
+    .dropdown-toggle::after {
+        margin-left: auto; /* Push the caret to the far right */
+    }
+}

@@ -1,0 +1,27 @@
+.filter__area{
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    .filter__dropdownbtn{
+        p{
+            flex-basis: 20%;
+        }
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        flex-basis: 30%;
+
+    }
+    .filter__search{
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-basis: 30%;
+    }
+}
+
+.filter__button-toolbar{
+    margin-left: auto;
+    gap: 5px;
+    
+}

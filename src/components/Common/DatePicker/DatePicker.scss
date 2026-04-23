@@ -1,0 +1,28 @@
+/* styles.scss hoặc component CSS riêng */
+.no-native-icon::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+  }
+  
+
+.date-picker-input{
+    .form-label{
+        margin-bottom: 0.3rem;
+        font-weight: 600;
+        color: #5E5E5E;
+    }
+    .input-group{
+        border: 1px solid #CECECE;
+        border-radius: 5px;
+        padding: 0.2rem;
+        .icon-custom{
+            color: #F49B33;
+        }
+        .form-control{
+            color: #5E5E5E;
+            font-size: 1.2rem;
+            font-weight: 600;
+
+        }
+    }
+}

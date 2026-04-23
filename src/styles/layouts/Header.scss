@@ -1,0 +1,183 @@
+.header {
+  position: relative;
+  // background-image: url("../../../public/background.png");
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 800px;
+  color: #1C2B38;
+  padding: 20px 50px;
+  text-align: center;
+  
+  .header__content{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+    
+    .header__background-img{
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    .header__title {
+      font-family: 'Volkhov', serif;
+      // font-size: clamp(1.5rem, 3vw, 60px);
+      font-size: 3rem;
+      font-weight: bold;
+      color: #1C2B38;
+      margin-bottom: 1rem;
+      position: relative;
+      width: 100%;
+      z-index: 100;
+      }
+      .header__intro-text{
+        width: 60%;
+        font-size: 1rem;
+      }
+      
+  }
+}
+
+.header__circle-button {
+  width: 80px;
+  height: 80px;
+  background-color: white;
+  border-radius: 50%;
+ 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 0 0 15px rgba(255, 255, 255, 0.329), 
+              0 0 0 30px rgba(235, 235, 235, 0.212), 
+                
+
+
+}
+
+.header__play-icon {
+  width: 0;
+  height: 0;
+  border-left: 20px solid #7DAFAF; /* Màu xanh nhạt */
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+}
+
+
+.header__video-area{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 50px;
+
+  p{
+      font-family: 'Mulish', sans-serif;
+      margin-left: 50px;
+      font-size: 24px;
+      font-weight: bold;
+  }
+}
+
+
+
+// @media (max-width: 1200px) {
+//   .header{
+//     height: 500px;
+
+//     .header-content{
+//       h1{
+//         font-size: 2rem;
+//       }
+//     }
+//   }
+// }
+
+.video_area {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+
+    .video {
+        max-width: 90vw; // Tăng kích thước popup
+        width: 100%;
+        max-height: 90vh;
+        overflow: hidden;
+        position: relative;
+
+        .relative {
+            position: relative;
+        }
+
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        button {
+            z-index: 60; // Đảm bảo nút đóng ở trên video
+            font-size: 2rem;
+            line-height: 1;
+        }
+    }
+}
+
+
+@media (max-width: 1024px) {
+  .header{
+    height: 500px;
+
+    .header__content{
+      h1{
+        font-size: 2rem;
+      }
+      .header__intro-text{
+        width: 80%;
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px){
+
+  .header__video-area{
+    display: none;
+  }
+  .header__intro-text{
+    display: none;
+  }
+}
+
+
+@media (max-width: 576px) {
+  .header{
+    height: 400px;
+
+    .header__content{
+      h1{
+        font-size: 1.5rem;
+      }
+     
+    }
+  }
+}

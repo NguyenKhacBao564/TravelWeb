@@ -1,0 +1,55 @@
+.tourInforCard{
+    background-color: #eef5fc;
+
+    h3{
+        color: #123288;
+        font-family: "Volkhov", serif;
+        font-weight: 700;
+        font-style: normal;
+    }
+
+    .tour__infor--icon{
+        font-size: 20px;
+        color: #7BBCB0;
+        margin-right: 10px;
+    }
+
+    .tour_infor{
+        p:first-child{
+            font-size: 20px;
+        }
+    }
+    .divider-horizon {
+        width: 90%; /* Chiều rộng đường phân chia */
+        // max-width: 500px; /* Giới hạn chiều rộng tối đa */
+        margin: 0.5rem auto; /* Căn giữa ngang và margin dọc */
+        border: none; /* Xóa border mặc định */
+        border-top: 2px solid #6e6e6e; /* Đường ngang xám, dày 2px */
+        display: block; /* Đảm bảo là block element */
+  }
+  .divider-vertical{
+        width: 2px; /* Độ dày thanh dọc */
+        height: 100%; /* Kéo dài theo chiều cao cột */
+        background-color: #6e6e6e; /* Màu xám giống thanh ngang */
+        margin: 0 auto; /* Căn giữa trong Col */
+  }
+
+  .price_infor{
+    .ageGroup__label{
+        p:first-child{
+            font-size: 20px;
+        }
+    }
+    .price{
+    color: red;
+    font-size: 24px;
+    font-weight: 700;
+    float: right;
+  }
+  }
+  
+}
+
+// .col{
+//     border: 1px solid #0a47f0;
+// }

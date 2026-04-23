@@ -1,0 +1,34 @@
+.review-item {
+    display: flex;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid #f0f0f0;
+    &:last-child { border-bottom: none; }
+    .avatar {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .review-content {
+      flex: 1;
+      .review-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        .name { font-weight: bold; }
+        .date { color: #888; font-size: 0.95rem; }
+      }
+      .stars {
+        .star {
+          color: #ddd;
+          font-size: 1.1rem;
+          &.filled { color: #f7b500; }
+        }
+      }
+      .review-text {
+        margin-top: 6px;
+        font-size: 1.05rem;
+      }
+    }
+  }

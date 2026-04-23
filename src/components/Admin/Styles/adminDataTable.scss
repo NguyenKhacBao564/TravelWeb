@@ -1,0 +1,106 @@
+.admin-table-container {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+  padding: 0;
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.admin-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+
+.admin-table-header {
+  background: #f8fafc;
+  color: #1a1a1a;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 16px 12px;
+  border-bottom: 1.5px solid #e5e7eb;
+}
+
+.admin-table-row {
+  transition: background 0.2s;
+}
+.admin-table-row:hover {
+  background: #f5f7fa;
+}
+.admin-table-row.selected {
+  background: #f0f6ff;
+}
+
+.admin-table-checkbox-header,
+.admin-table-checkbox-cell {
+  text-align: center;
+  width: 48px;
+  padding: 0;
+}
+
+.admin-table-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.admin-table-checkbox {
+  accent-color: #2563eb;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.admin-table-selected-dot {
+  width: 10px;
+  height: 10px;
+  background: #2563eb;
+  border-radius: 50%;
+  position: absolute;
+  left: -22px;
+  top: 50%;
+  transform: translateY(-50%);
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.admin-table-cell {
+  padding: 14px 12px;
+  font-size: 15px;
+  color: #222;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+
+// Action buttons
+.admin-action-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 4px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-left: 6px;
+  transition: background 0.18s;
+}
+.admin-action-btn.lock {
+  background: #ff4d4f;
+  color: #fff;
+}
+.admin-action-btn.lock:hover {
+  background: #e04344;
+}
+.admin-action-btn.detail {
+  background: #20bfa9;
+  color: #fff;
+}
+.admin-action-btn.detail:hover {
+  background: #179e8c;
+}
+
+.admin-table-pagination-wrapper {
+  padding: 18px 24px 18px 0;
+  display: flex;
+  justify-content: flex-end;
+}

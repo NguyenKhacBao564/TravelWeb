@@ -1,0 +1,45 @@
+.review-section {
+    // border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    background: #fff;
+    
+    margin: 0 auto;
+  
+    .review-header {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+  
+      h2 {
+        font-size: 1.4rem;
+        margin-bottom: 8px;
+      }
+      .review-score {
+        font-size: 2.2rem;
+        font-weight: bold;
+        color: #2d3a4a;
+        .count {
+          font-size: 1rem;
+          color: #888;
+          margin-left: 12px;
+        }
+      }
+      .stars {
+        margin-top: 4px;
+        .star {
+          color: #ddd;
+          font-size: 1.5rem;
+          &.filled {
+            color: #f7b500;
+          }
+        }
+      }
+    }
+    
+    .extend-review{
+      color: #7BBCB0;
+      font-size: 16px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  }

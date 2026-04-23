@@ -1,0 +1,45 @@
+  
+ 
+ th{color: #26ADA6 !important;}
+
+ .table-wrapper{
+    // background-color:#131313 !important;
+    // padding: 5px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    
+ }
+
+ .tour-management__table{
+    border-radius: 10px; /* Bo tròn toàn bộ bảng */
+    overflow: hidden; /* Giữ border-radius khi có border */
+    padding: 0;
+    margin: 0;
+
+    .tour-management__table-row{
+        border-bottom: 1px solid #F2F4F7;
+        padding: 10px 20px !important;
+        td{
+            max-width: 250px; /* Chiều rộng tối đa cho mỗi ô */
+            white-space: nowrap; /* Không cho phép xuống dòng */
+            overflow: hidden; /* Ẩn phần nội dung bị tràn */
+            text-overflow: ellipsis; /* Hiển thị dấu 3 chấm cho nội dung bị cắt */
+            &.active{
+                color: #047857;
+            }
+            &.upcoming{
+                color: #FFA432;
+            }
+            &.expired{
+                color: #FF0024;
+            }
+            &.completed{
+                color: #0167BE;
+            }
+        }
+        &:last-child {
+            border-bottom: none; /* Xóa border-bottom cho dòng cuối cùng */
+        }
+    }
+ }

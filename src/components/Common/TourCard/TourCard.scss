@@ -1,0 +1,146 @@
+.tour-card {
+  // width: clamp(min(300px, 100%), 100%, max(90vw, 55rem));
+  width: 100%;
+  padding-bottom: 5px;
+  background: #ffffff;
+  border-radius: 5px;
+  box-shadow: 0px 4px 12px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden; 
+  text-align: left;
+  font-size: 16px;
+  font-family: Arial, sans-serif;
+  max-width: 300px;
+
+  &__image-container {
+    position: relative;
+    width: 100%;
+    height: 200px; /* Điều chỉnh theo kích thước ảnh mong muốn */
+    overflow: hidden;
+    .tour-card__discount  {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background-color:#DB4444;
+      color: white  !important;
+      font-size: 14px !important;
+      font-weight: bold;
+      padding: 2px 15px;
+      // border-radius: 5px;
+    }
+    .tour-card__favorite {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(255, 255, 255, 0.8);
+      border: none;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      color: rgba(100, 100, 100, 0.534);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: background 0.3s ease;
+      &.filled{
+        color: #E01600 !important;
+      }
+      &:hover{
+        background: white;
+      }
+      &:active{
+        transform: scale(0.9);
+      }
+    }
+    .tour-card__img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      padding: 10px;
+    }
+  }
+
+  &__info {
+    padding: 0 10px;
+    color: #000000 !important;
+    //Tên tour
+    .tour-card__name {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      line-height: 1.5;
+      max-height: calc(1.3em * 5);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  &__details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    // font-size: 90%;
+    padding: 0;
+    margin: 0;
+    li {
+      display: inline-block;
+      width: 100%;
+    }
+    p {
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+      color: #000000 !important;
+      gap: 8px;
+      width: 100%;
+      margin: 5px 0;
+    }
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px solid #ddd;
+
+    &__price-container {
+      flex: 1;
+      p {
+        font-size: 0.8rem;
+        margin: 0;
+        padding: 0;
+        text-align: left;
+        color: #495560 !important;
+      }
+      #price {
+        font-size: clamp(min(0.8rem, 1rem), 16px, max(90vw, 55rem));
+        width: 100%;
+        box-sizing: content-box;
+        font-weight: bold;
+        color: #E01600 !important;
+        font-family: 'Mulish', sans-serif;
+      }
+    }
+  }
+}
+
+.book-btn {
+  background-color: #FC7948;
+  color: white !important;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 800;
+  padding: 2% 5%;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  box-sizing: content-box;
+
+  &:hover {
+    background-color: #fc6934;
+  }
+}

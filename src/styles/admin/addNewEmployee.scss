@@ -1,0 +1,75 @@
+@import '../admin/_variables';
+
+.add-employee-page {
+    padding: 0rem;
+  
+    .page-title {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      font-family: 'Times New Roman', Times, serif;
+    }
+
+  
+    .form-card {
+      background: #fff;
+      border-radius: 0.5rem;
+      padding: 2rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  
+      .photo-upload {
+        text-align: left;
+        margin-bottom: 2rem;
+  
+        .photo-label {
+          display: inline-block;
+          width: 100px;
+          height: 100px;
+          border-radius: 50%;
+          background: #e0e0e0;
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+  
+          .photo-placeholder,
+          .photo-preview {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+          }
+  
+          .photo-preview {
+            object-fit: cover;
+          }
+        }
+  
+        .photo-text {
+          margin-top: 0.5rem;
+          font-weight: 500;
+        }
+      }
+  
+      .section-title {
+        font-size: 1.125rem;
+        margin-bottom: 1rem;
+        color: #333;
+      }
+  
+      .text-end {
+        margin-top: 1.5rem;
+
+        &.add-employee-button {
+          background-color: white;
+          border: 1px solid $primary-color;
+          color: $primary-color;
+          transition: background 0.2s, color 0.2s;
+          &:hover {
+            background-color: $primary-color;
+            color: white;
+          }
+        }
+      }
+    }
+  }
+  

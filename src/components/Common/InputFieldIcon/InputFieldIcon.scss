@@ -1,0 +1,43 @@
+.input-field-icon {
+  margin-bottom: 1rem;
+
+  .form-label {
+    font-size: 1.5rem;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+  }
+  
+  .input-group {
+    border-bottom: 1px solid #2e2e2e;
+    transition: border-color 0.2s ease;
+
+    .form-control {
+      border-radius: 0;
+      padding: 0.5rem 0;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #424242;
+
+    }
+    
+    .input-group-text {
+      transition: opacity 0.2s ease;
+      
+      .icon-edit {
+        color: #e6a23c;
+      }
+      
+      &:hover {
+        opacity: 0.8;
+      }
+      
+      &:active {
+        opacity: 0.6;
+      }
+    }
+    
+    &:focus-within {
+      border-color: #e6a23c;
+    }
+  }
+} 

@@ -1,0 +1,47 @@
+// _mixins.scss
+
+@mixin flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+//Định nghĩa kiểu button
+@mixin button-style($bg-color,$border-color ,$text-color, $hover-color, $text-color-hover) {
+  background-color: $bg-color;
+  color: $text-color;
+  border-radius: 5px;
+  outline: none;
+  font-family: 'Open Sans', sans-serif;
+  font-weight: 700;
+  border: 1px solid $border-color;
+  cursor: pointer;
+  transition: 0.3s ease-in-out;
+  &:hover {
+    background-color: $hover-color;
+    color: $text-color-hover;
+  }
+}
+
+@mixin search-type-light($bg-color) {
+  background-color: $bg-color !important; /* Màu xanh */
+  outline: none;
+  // box-shadow: none;
+  // border-right: none;
+  &:focus {
+    box-shadow: none;
+    outline: none;
+    
+  }
+  &::placeholder{
+    color: #495560 !important; /* Màu chữ */
+  }
+}
+
+
+@mixin none-border{
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}

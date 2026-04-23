@@ -1,0 +1,276 @@
+
+@import "../variables";
+.maincontent {
+  margin: 100px auto;
+  margin-top: clamp(150px, 5vw, 200px);
+  width: min(80%, 1500px);
+  h1{
+    font-weight: bold;
+  }
+  @media (max-width: 768px) {
+    width: 100%; // Chiếm full width màn hình
+    // margin: 100px 0; // Bỏ margin left/right
+  }
+}
+
+
+.header-section {
+  h1 {
+    font-size: clamp(24px, 5vw, 36px);
+    color: #1C2B38;
+    font-family: 'Volkhov', serif;
+    text-align: center;
+  }
+
+  p {
+    font-size: clamp(14px, 3vw, 16px);
+    width: min(90%, 600px);
+    margin: 20px auto;
+    color: #778088;
+    text-align: center;
+  }
+}
+
+.list-provinces {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 30px;
+
+  @media (max-width: 768px) {
+    justify-content: flex-start; // Căn trái để scroll
+    overflow-x: auto; // Cho phép scroll ngang
+    padding: 10px 0; // Thêm padding để tránh thanh scroll che mất content
+    -webkit-overflow-scrolling: touch; // Làm mượt scroll trên iOS
+    scrollbar-width: none; // Ẩn thanh scroll trên Firefox
+    -ms-overflow-style: none; // Ẩn thanh scroll trên IE/Edge
+    
+    &::-webkit-scrollbar { // Ẩn thanh scroll trên Chrome/Safari
+      display: none;
+    }
+
+    // Thêm padding để item cuối cùng không bị che khuất
+    &::after {
+      content: '';
+      padding-right: 20px;
+    }
+  }
+
+  .province-btn, p {
+    flex: 0 0 auto; // Ngăn các items co lại
+    white-space: nowrap; // Ngăn text wrap
+    border: 1px solid #7BBCB0;
+    background-color: transparent;
+    border-radius: 40px;
+    width: 130px;
+    height: 44px;
+    display: flex;
+    font-family: 'Musish', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    justify-content: center;
+    align-items: center;
+
+    &:hover {
+      background-color: #7BBCB0;
+      color: white;
+    }
+
+    &.active {
+      background-color: #7BBCB0;
+      color: white;
+    }
+  }
+}
+
+.province-detail {
+  margin-top: 30px;
+  
+  .province-img {
+    width: 100%;
+    height: clamp(300px, 50vw, 600px);
+    object-fit: cover;
+  }
+
+  .province-info {
+    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.5);
+    height: 20%;
+    border-radius: 5px;
+    padding: clamp(20px, 3vw, 50px);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    @media (max-width: 768px) {
+      height: 200px;
+      justify-content: space-between;
+    }
+  }
+
+  .province-title {
+    width: 100%;
+    display: flex;
+    align-items:flex-start;
+    justify-content: space-between;
+    // border: 1px solid rgb(24, 38, 161);
+    // @media (max-width: 768px) {
+    //   width: 60%;
+    // }
+
+    h1 {
+      width: fit-content; // Giữ width fit-content
+      font-size: clamp(9px, 4vw, 36px);
+      color: white;
+      border-left: 5px solid white; // Chỉ giữ lại border-left
+      padding-left: 5px;
+      margin: 0;
+      text-align: center;
+      //Thêm glow
+      text-shadow: 0 0 10px rgba(213, 211, 211, 0.8), 
+                    0 0 20px rgba(213, 211, 211, 0.6), 
+                    0 0 30px rgba(213, 211, 211, 0.192);
+    }
+
+    p {
+      width: 70%;
+      margin: 0;
+      font-size: clamp(14px, 2vw, 16px);
+      color: rgb(213, 211, 211);
+      // border: 1px solid red;
+      text-align: justify;
+      
+      text-shadow: 0 0 10px rgba(213, 211, 211, 0.8), 
+      0 0 20px rgba(213, 211, 211, 0.6), 
+      0 0 30px rgba(213, 211, 211, 0.192);
+    }
+
+    @media (max-width: 768px) {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      h1{
+        font-size: 1.5rem;
+      }
+      p{
+        // border: 1px solid rgb(24, 38, 161);
+        font-size: clamp(10px, 2vw, 16px);
+        width: 100%;
+        max-width: 100%;
+      }
+    }
+  }
+}
+
+.cta-container {
+  display: flex;
+  justify-content: flex-end;
+  // border: 1px solid red;
+}
+
+.cta-button {
+  background-color: #FFDA32;
+  color: black;
+  font-weight: bold;
+  padding: 10px clamp(20px, 2vw, 40px);
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: #ebc51f;
+  }
+  @media (max-width: 768px) {
+    padding: 5px;
+    background-color: #e2c339;
+    color: rgb(0, 0, 0);
+    &:hover {
+      background-color: transparent;
+    }
+  }
+}
+
+.tourlist_Label {
+  margin-top: 50px;
+  float: left;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #272727;
+  font-size: 36px;
+  font-weight: bold;
+  color: #1C2B38;
+  font-family: 'Volkhov', serif;
+}
+
+
+
+.TourOutStanding_container{
+  background-color: #292D32;
+  position: relative ;
+  margin-top: 30px;
+  width: 100vw; // Chiếm full chiều rộng viewport
+  left: 50%; // Căn giữa
+  right: 50%;
+  margin-left: -50vw; // Kéo ra ngoài giới hạn container cha
+  margin-right: -50vw;
+  padding: 24px; // Dùng biến từ _variables.scss (24px)
+  .Tourout{
+    box-shadow: none !important;
+  }
+
+  .title {
+    font-size: clamp(24px, 5vw, 36px);
+    color: white;
+    font-family: 'Volkhov', serif;
+    width: max-content;
+    padding-bottom: 0.2rem;
+    margin-bottom: $spacing-sm;
+    margin-left: $spacing-xl;
+    border-bottom: 2px solid #ffffff;
+    text-shadow: 0 0 3px rgba(213, 211, 211, 0.8), 
+      0 0 10px rgba(213, 211, 211, 0.6), 
+      0 0 20px rgba(213, 211, 211, 0.192);
+    }
+
+  .description {
+    font-size: clamp(14px, 3vw, 16px);
+    color: #9DA8B2;
+    width: min(90%, 800px);
+    margin-bottom: $spacing-xl;
+    margin-left: $spacing-xl;
+  }
+
+  .slick-slider {
+    max-width: 100%; // Đảm bảo slider full container
+    margin: 0 auto;
+  }
+  
+  .slick-list {
+    overflow: visible; // Cho phép thẻ tràn ra ngoài nếu cần
+  }
+  
+  .slick-track {
+    display: flex;
+    align-items: stretch; // Đảm bảo các thẻ cao bằng nhau
+  }
+  
+  .slick-slide > div {
+    display: flex;
+    justify-content: center; // Căn giữa TourCard
+  }
+}
+
+.slick-prev::before,
+.slick-next::before {
+display: none !important;
+}
+@media (max-width: 576px) {
+  .province-info {
+    padding: 15px;
+  }
+  
+  .list-provinces {
+    gap: 5px;
+  }
+}

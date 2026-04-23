@@ -1,0 +1,50 @@
+.inputDiv {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 5px;
+    label {
+        font-size: 14px;
+        font-weight: bold;
+        padding: 0.5rem 0;
+        display: block;
+    }
+
+    .errorField{
+        display: block;
+        height: 0.8rem;
+        .errorText {
+            display: block;
+            width: 100%;
+            font-size: 12px;
+            font-weight: bold;
+            color: #e43d3d;
+        }   
+    }
+    .inputWrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        input{
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 0.2rem;
+            border: 1px solid #E0E0E9;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-shadow: 0 10px 50px -20px rgba(68, 97, 242, 11);
+            outline: none;
+        }
+        input:invalid[focused="true"]{
+            border: 1px solid #ff1717;
+        }
+        .icon {
+            position: absolute;
+            right: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            color: #555;
+            transition: color 0.2s ease;
+        }
+    }     
+}

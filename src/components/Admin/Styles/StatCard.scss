@@ -1,0 +1,89 @@
+// src/components/Admin/Styles/StatCard.scss
+.stat-card {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    min-width: 250px;
+    max-width: 300px;
+    margin: 1rem;
+    &__icon {
+      flex-shrink: 0;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      margin-right: 1rem;
+    }
+  
+    &__info {
+      display: flex;
+      flex-direction: column;
+    }
+  
+    &__title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      color: #666;
+    }
+  
+    &__value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+  
+    // Card đầu (Doanh thu)
+    &--primary {
+      background: linear-gradient(135deg, #2BC3A1, #3EE2CB);
+      color: #fff;
+  
+      .stat-card__icon {
+        background: rgba(255,255,255,0.2);
+        color: #fff;
+      }
+      .stat-card__title,
+      .stat-card__value {
+        color: #fff;
+      }
+    }
+  
+    // Card trắng + xanh (Khách hàng)
+    &--secondary {
+      background: #fff;
+  
+      .stat-card__icon {
+        background: #E8F1FF;
+        color: #2D7BED;
+      }
+      .stat-card__title {
+        color: #2D7BED;
+      }
+      .stat-card__value {
+        color: #0E0E2C;
+      }
+    }
+  
+    // Card trắng + vàng (Tour)
+    &--tertiary {
+      background: #fff;
+  
+      .stat-card__icon {
+        background: #FEF8EC;
+        color: #FFCB4A;
+      }
+      .stat-card__title {
+        color: #FFCB4A;
+      }
+      .stat-card__value {
+        color: #0E0E2C;
+      }
+    }
+  }
+  

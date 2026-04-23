@@ -1,0 +1,198 @@
+@import '../../styles/variables';
+@import '../../styles/mixin';
+
+.searchbarContainer {
+    background-color: white;
+    display: flex;
+    position: absolute;
+    bottom: -40px;
+    transform: translateX(-50%);
+    left: 50%;
+    justify-content: space-between;
+    align-items: center;
+    width: 95%;
+    max-width: 1100px;
+    height: max-content;
+    padding: 20px;
+    box-shadow: 0px 9px 15px rgb(209,232,228);
+    border-radius: 10px;
+}
+
+.searchbarMobile{
+    display: none;
+    width: 100%;
+}
+
+.searchForm {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0;
+}
+
+  
+.searchItem {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 200px;
+    padding: 0 15px;
+    position: relative;
+
+    &:first-child {
+        padding-left: 0;
+    }
+
+    &:last-child {
+        padding-right: 0;
+    }
+}
+  
+.separator {
+    width: 1px;
+    height: 40px;
+    background: #e0e0e0;
+    margin: 0 10px;
+    align-self: center;
+    opacity: 0.7;
+}
+  
+.searchLabel {
+    font-size: 15px;
+    font-weight: bold;
+    color: $primary-color;
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+  
+.icon {
+    width: 10px;
+    color: $primary-color;
+    margin-right: 10px;
+}
+  
+.searchInput {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+    padding: 8px 0;
+    color: #707070;
+    border-bottom: 1px solid #ddd;
+    width: 100%;
+    transition: all 0.3s ease;
+    -webkit-appearance: none; // Xóa giao diện mặc định của dropdown trên Safari
+    -moz-appearance: none; // Xóa giao diện mặc định của dropdown trên Firefox
+    appearance: none; // Xóa giao diện mặc định của dropdown
+    &:focus {
+        border-bottom: 1px solid #1a1a1a;
+        &::placeholder {
+            color: #1a1a1a;
+        }
+    }
+}
+  
+.searchButton {
+    background-color: #FFDA32;
+    border: none;
+    font-family: 'Mulish', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    width: 150px;
+    height: 54px;
+    color: #1C2B38;
+    padding: 10px 20px;
+    border-radius: 40px;
+    cursor: pointer;
+    box-shadow: 0px 9px 15px rgb(255,242,183);
+    transition: all 0.3s ease;
+    margin-left: 20px;
+
+    &:hover {
+        background: #f5d02c;
+        transform: translateY(-2px);
+    }
+}
+
+// Responsive styles
+@media (max-width: 1024px) {
+    .searchbarContainer {
+        gap: 20px;
+        padding: 15px;
+    }
+
+    .searchItem {
+        min-width: 180px;
+        padding: 0 10px;
+    }
+
+    .searchButton {
+        width: 120px;
+        height: 45px;
+        margin-left: 15px;
+    }
+}
+
+
+// @media (max-width: 768px) {
+ 
+//   .searchButton {
+//     width: 100%;
+//     height: 45px;
+//     margin: 10px 0 0 0;
+//   }
+// }
+
+@media (max-width: 768px) {
+    .searchbarContainer {
+        background: none;
+        box-shadow: none;
+        bottom: 0px;
+        position: relative;
+        transform: none;  // Reset transform cần cái này để giúp container mobile chiếm toàn bộ chiều rộng màn hình
+        left: 0;  // Reset left
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        
+        .searchbarMobile {
+            display: block;
+            position:absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            
+        }
+    }
+
+    .searchForm {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .searchbarContainer {
+        padding: 10px;
+    }
+
+    .searchLabel {
+        font-size: 14px;
+    }
+
+    .searchInput {
+        font-size: 13px;
+    }
+
+    .searchButton {
+        height: 40px;
+        font-size: 14px;
+    }
+
+    .mobileSearchToggle {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+}

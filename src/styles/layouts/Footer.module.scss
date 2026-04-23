@@ -1,0 +1,56 @@
+
+
+.footer {
+  background-color: #13253F;
+  padding-top: 30px;
+  color: white;
+}
+
+.footerLink p {
+  font-weight: bold;
+}
+
+.footerLink ul {
+  list-style: none;
+  padding: 0;
+}
+
+.footerLink ul li {
+  margin: 5px 0;
+  cursor: pointer;
+
+}
+
+
+.footerLink ul li:hover {
+  text-decoration: underline;
+}
+
+/* Chỉnh cho responsive */
+@media (max-width: 768px) {
+  .footerLink {
+    text-align: center;
+  }
+
+  .footerDescription {
+    text-align: center !important;
+  }
+}
+
+.footerDescription {
+  display:flex;
+  justify-content: space-between;
+  background: #0F1E32;
+  // border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 15px;
+  padding-bottom: 15px;
+  margin-top: 20px;
+}
+
+/* Icon tròn */
+.circle {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}

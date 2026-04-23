@@ -1,0 +1,141 @@
+@import '../_variables';
+
+.inforUser_page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    color: black !important;
+
+    .container-infor {
+        flex-grow: 1;
+        margin-top: $navbar-height;
+        width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 0 15px;
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            margin: 20px 0;
+
+            i {
+                margin-right: 8px;
+            }
+        }
+
+        .profile-title {
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            color: #1e3a61;
+            margin-bottom: 30px;
+        }
+
+        .profile-container {
+            background-color: #e4e4e4;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            width: 100%;
+
+            .user-form {
+                .form-group {
+                    margin-bottom: 20px;
+                }
+
+                .form-label {
+                    font-weight: 500;
+                    margin-bottom: 8px;
+                }
+
+                .form-control {
+                    padding: 10px 15px;
+                    border-radius: 5px;
+                    border: 1px solid #ddd;
+                }
+
+                .update-btn {
+                    background-color: #339688;
+                    border-color: #339688;
+                    color: #ffffff;
+                    font-weight: 600;
+                    padding: 8px 20px;
+
+                    &:hover {
+                        background-color: #2a8a7d;
+                        border-color: #339688;
+                    }
+                }
+            }
+
+            .avatar-section {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                .avatar-container {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 30px;
+                    text-align: center;
+
+                    .avatar-display {
+                        border: 1px solid #000000;
+                        width: 180px;
+                        height: 180px;
+                        border-radius: 50%;
+                        overflow: hidden;
+                        .avatar-image{
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                        }
+                    }
+                    .avatar-update {
+                        .btn-changeAvatar{
+                            border: 1px dashed #000000;
+                            background-color: #ffffff;
+                            border-radius: 5px;
+                            transition: background-color 0.3s ease;
+                            &:hover{
+                                background-color: #adadad;
+                            }
+                        }
+                        p {
+                            margin-top: 10px;
+                            color: #4e4e4e;
+
+                            font-size: 16px;
+                        }
+                    }
+                }
+            }
+        }
+
+        .logout-btn {
+            padding: 8px 25px;
+            font-weight: 600;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .inforUser_page {
+        .container-infor {
+            padding: 0 10px;
+
+            .profile-container {
+                padding: 15px;
+
+                .avatar-section {
+                    margin-top: 30px;
+                }
+            }
+        }
+    }
+}

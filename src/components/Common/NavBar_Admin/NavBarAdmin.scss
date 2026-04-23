@@ -1,0 +1,29 @@
+.navbar-admin{
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    
+    
+    .navbar-admin__title{
+        margin:0;
+        font-size: 28px;
+        font-weight: 600;
+        font-family: 'Times New Roman', Times, serif;
+    }
+
+    .navbar-admin__user{
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        
+        .navbar-admin__avatar{
+            
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+    }
+
+}
+

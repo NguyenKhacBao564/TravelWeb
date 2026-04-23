@@ -1,0 +1,28 @@
+.counter-input{
+
+    .counter-input-label{
+        margin-bottom: 0.3rem;
+        font-weight: 600;
+        color: #5E5E5E;
+    }
+    .input-group{
+        border: 1px solid #CECECE;
+        border-radius: 5px;
+        padding: 0.2rem;
+        > *{
+            background-color: transparent !important;
+        }
+        .button-subtract{
+            color: #D32B1E;
+        }
+        .button-plus{
+            color: #2DB6A4;
+        }
+        .form-control{
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #5E5E5E;
+            
+        }
+    }
+}

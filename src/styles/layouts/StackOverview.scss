@@ -1,0 +1,102 @@
+@import '../_variables';
+
+.stats-overview {
+    // background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+    padding: $spacing-lg 0; // 32px
+    position: relative;
+    text-align: center;
+    width: 100%;
+    .decoricon1{
+        position: absolute;
+        top: 0;
+        left: -50px;
+        z-index: 1;
+        
+    }
+
+    .decoricon2{
+        position: absolute;
+        top: 0;
+        right: -50px;
+        z-index: 1;
+        
+    }
+    h2 {
+        font-size: clamp(20px, 4vw, 60px);
+        color: $text-color; // #333
+        width: 80%;
+        margin: 0 auto;
+        font-family: 'Mulish', serif;
+        font-weight: $font-weight-bold; // 700
+        margin-bottom: $spacing-md; // 24px
+    }
+
+    .stats-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 60px;
+        gap: $spacing-md; // 24px
+        flex-wrap: wrap;
+    }
+
+    .stat-item {
+        // background: white;
+        border-radius: $border-radius-base; // 4px
+        // box-shadow: $box-shadow-sm; // 0 2px 4px rgba(0, 0, 0, 0.1)
+        padding: $spacing-sm $spacing-md; // 16px 24px
+        min-width: 200px;
+        flex: 1 1 200px;
+
+        h3 {
+        font-size: clamp(24px, 5vw, 72px);
+        font-family: 'Poppins', serif;
+        color: #323231; // #7BBCB0
+        margin: 30px 0;
+        }
+
+        p {
+        font-size: clamp(14px, 2vw, 28px);
+        color: #5B5A5B; // #778088
+        font-family: 'Open Sans', serif;
+        font-weight: $font-weight-normal; // 400
+        margin: $spacing-xs 0 0; // 8px
+        }
+  }
+
+  @media (max-width: $breakpoint-md) { // 768px
+    padding: $spacing-md 0; // 24px
+
+    .stats-container {
+      gap: $spacing-sm; // 16px
+    }
+
+    .stat-item {
+      min-width: 150px;
+      padding: $spacing-xs $spacing-sm; // 8px 16px
+
+      h3 {
+        font-size: clamp(20px, 4vw, 28px);
+      }
+
+      p {
+        font-size: clamp(12px, 2vw, 14px);
+      }
+    }
+  }
+
+  @media (max-width: $breakpoint-sm) { // 576px
+    h2 {
+      font-size: clamp(18px, 3.5vw, 24px);
+    }
+
+    .stats-container {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .stat-item {
+      width: 80%;
+      max-width: 300px;
+    }
+  }
+}

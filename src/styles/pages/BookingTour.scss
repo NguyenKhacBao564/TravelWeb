@@ -1,0 +1,106 @@
+@import '../_variables';
+
+
+.bookingPage {
+  overflow-y: scroll;
+  height: 100vh;
+  min-height: 100vh;
+
+  .bookingContent{
+    margin-top: calc(#{$navbar-height} + 20px);
+    // border: 1px solid rgb(0, 89, 255);
+    min-height: 100vh;
+
+    // Container của ảnh chính
+    .main-image-container {
+      width: 100%;
+      height: 500px; // Chiều cao cố định cho ảnh chính
+      overflow: hidden; // Ẩn phần ảnh thừa
+      border-radius: 5px; // Bo góc nhẹ
+    }
+
+    // Ảnh chính
+    .main-image {
+      width: 100%;
+      height: 100%; // Kéo dài theo container
+      object-fit: cover; // Giữ tỷ lệ, cắt bớt phần thừa
+      object-position: center; // Căn giữa ảnh
+    }
+    .thumbnail-image {
+      width: 15%;
+      cursor: pointer;
+      transition: opacity 0.3s ease, transform 0.3s ease, border 0.3s ease;
+
+      &:hover {
+        opacity: 0.8; // Làm mờ nhẹ (giữ từ trước)
+        transform: scale(1.1); // Phóng to nhẹ
+      }
+    }
+
+    h1{
+        padding: 0;
+        margin: 0;
+        font-size: 26px;
+        font-weight: $font-weight-bold;
+        margin-bottom: 20px;
+    }
+    .section-title{
+        padding: 0;
+        margin: 0;
+        font-family: "Volkhov", serif;
+        font-size: 28px;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+    .booking_card {
+      min-height: 100vh;
+      .booking-card-sticky {
+        // margin-top: 100px !important; /* Đảm bảo card không bị Navbar che khuất */
+        position: sticky ;
+        top: calc(#{$navbar-height} + 120px); /* Khoảng cách từ top để tránh bị Navbar che khuất */
+        z-index: 1 ; /* Đảm bảo card không bị các phần tử khác đè lên */
+        box-shadow: 2px 2px 5px 5px rgba(0, 0, 0, 0.1);
+      }
+    }
+    .tour-relevant{
+      font-family: "Volkhov", serif;
+      font-weight: bold;
+      font-size: 36px;
+    }
+    li{
+      list-style: circle;
+    }
+  }
+}
+
+
+.star {
+    color: #ddd;
+    font-size: 1.5rem;
+    &.filled {
+      color: #f7b500;
+    }
+}
+
+
+.btn-custom-primary {
+  background-color: #7BBCB0; /* Màu xanh dương tùy chỉnh */
+  border-radius: 0;
+  color: white;
+  &:hover{
+    background-color: #66a196; /* Màu xanh dương tùy chỉnh */
+    color: white;
+  }
+}
+
+.btn-custom-secondary {
+  border: 1px solid #778088; /* Đường viền màu cam tùy chỉnh */
+  border-radius: 0;
+  color: #778088;
+  &:hover{
+    background-color: #b3b3b3;
+    color: #ffffff;
+  }
+}
+
+

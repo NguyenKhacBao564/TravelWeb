@@ -1,0 +1,29 @@
+.Manager__content {
+    // border: 5px solid rgb(7, 183, 253);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background-color: #F5F7FA;
+   .Manager__navbar{  
+        display: flex;
+        position: sticky;
+        top: 0;
+        padding: 20px 20px;
+        z-index: 9999;
+        background-color: white;
+        border-bottom: 1px solid #e0e0e0;
+        // border: 1px solid rgb(98, 255, 7);
+    }
+
+    .Manager__main-content {
+        padding: 20px 20px;
+        height: fit-content;
+        // border: 1px solid #0096fac7;
+      }
+    
+}
+
+

@@ -1,0 +1,44 @@
+.dropdown-btn{
+    border: none;
+    width: 100%;
+    border-radius: 5px;
+}
+
+/* Đổi màu nền và chữ của nút Dropdown */
+.dropdown-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff !important; /* Màu xanh */
+    color: rgb(19, 12, 12) !important;
+    border: none;
+    padding: 10px 15px;
+    width: 100%;
+    border-radius: 5px;
+  }
+
+.dropdown-menu{
+    padding: 0;
+    width: 100%;
+    border-radius: 5px;
+    border: none;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #f8f9fa !important; /* Màu nền nhạt */
+    max-height: 250px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+// .scrollable-menu {
+   
+// }
+
+.dropdown-item{
+    width: 100%;
+    color:rgb(19, 12, 12) !important;
+    //   /* Đổi màu khi hover vào item */
+    &:hover {
+        background-color: #EFEEF1;
+    }
+    
+}

@@ -1,0 +1,73 @@
+// src/components/Admin/Styles/ChartDonut.scss
+
+.chart-donut {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    margin-bottom: 1.5rem;
+    max-width: 350px;
+    min-width: 300px;
+    max-height: 420px;
+    
+    &__header {
+      padding: 1rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #333;
+      border-bottom: 1px solid #e5e7eb;
+    }
+  
+    &__body {
+      position: relative;
+      height: 300px;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  
+    &__center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+  
+      &-count {
+        font-size: 2rem;
+        font-weight: 600;
+        color: #555;
+      }
+      &-label {
+        font-size: 1rem;
+        color: #888;
+        margin-top: 0.25rem;
+      }
+    }
+  
+    &__legend {
+      display: flex;
+      justify-content: center;
+      margin-top: 0.1rem;
+      gap: 1.5rem;
+  
+      &-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.875rem;
+        color: #666;
+  
+        &-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 50%;
+          margin-right: 0.5rem;
+        }
+  
+        &-completed { background-color: #2BC289; }
+        &-pending   { background-color: #FF4D4F; }
+      }
+    }
+  }
+  

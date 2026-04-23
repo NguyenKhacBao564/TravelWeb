@@ -1,0 +1,231 @@
+.support-container {
+    flex: 1;
+    background-color: #ffffff;
+}
+
+.support-content {
+    max-width: 1024px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+    border: none;
+    outline: none;
+    background: none;
+    cursor: pointer;
+}
+
+.back-button:hover {
+    color: #2563eb;
+}
+
+.back-icon {
+    height: 16px;
+    width: 16px;
+    margin-right: 8px;
+}
+
+.customer-card {
+    background-color: white;
+    border: 1px solid #c7c8cb;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.customer-title {
+    text-transform: uppercase;
+    font-size: 18px;
+    font-weight: 500;
+    color: #FFA432;
+    margin-bottom: 16px;
+}
+
+.customer-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.customer-info-row {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.customer-info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #1f2937;
+    flex: 1;
+    min-width: 150px;
+}
+
+.customer-info-icon {
+    color: #ffffff;
+}
+
+.customer-details {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-top: 24px;
+}
+
+@media (min-width: 768px) {
+    .customer-details {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.customer-id-label {
+    color: #4b5563;
+    font-weight: 500;
+}
+
+.customer-id-value {
+    color: #ef4444;
+    font-weight: 500;
+}
+
+.support-section {
+    margin-bottom: 24px;
+
+    .support-label {
+        font-family: Inter;
+        font-size: 18px;
+        font-weight: bold;
+    }
+}
+
+.support-label {
+    color: #1f2937;
+    font-weight: 500;
+    margin-bottom: 8px;
+    
+}
+
+.support-content-box {
+    background-color: white;
+    padding: 16px;
+    border: 1px solid #c7c8cb;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.support-content-text {
+    color: #4b5563;
+}
+
+.response-card {
+    background-color: white;
+    border: 1px solid #c7c8cb;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    padding: 12px 24px 24px 24px;
+}
+
+.toolbar-button {
+    padding: 8px;
+    margin-right: 4px;
+    border: none;
+    background-color: transparent;
+
+    &:hover {
+        background-color: #e5e7eb;
+        border-radius: 4px;
+    }
+
+    svg {
+        height: 16px;
+        width: 16px;
+    }
+}
+
+.font-dropdown {
+    margin-left: 8px;
+
+    .dropdown-button {
+        padding: 4px 8px;
+        border: none;
+        background-color: transparent;
+
+        &:hover {
+            background-color: #e5e7eb;
+            border-radius: 4px;
+        }
+
+        select {
+            border: none;
+            background: none;
+            font-size: 14px;
+            color: #4b5563;
+            appearance: none;
+            padding: 0;
+
+            &:focus {
+                outline: none;
+            }
+        }
+    }
+}
+
+.editor-toolbar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 8px;
+    gap: 8px;
+
+    .divider {
+        width: 1px;
+        height: 24px;
+        background-color: #e5e7eb;
+        margin: 0 8px;
+    }
+}
+
+.response-text {
+    min-height: 256px;
+    margin-bottom: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+    &[contenteditable] {
+        outline: none;
+        &:focus {
+            border: none;
+            box-shadow: none;
+        }
+    }
+}
+
+.response-actions {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.send-button {
+    background-color: #3b82f6;
+    color: white;
+    padding: 8px 64px;
+    border-radius: 6px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content:center;
+}
+
+.send-button:hover {
+    background-color: #2563eb;
+}

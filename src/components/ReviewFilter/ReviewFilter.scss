@@ -1,0 +1,74 @@
+
+.review-filter {
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #f9f9f9;
+
+  .review-input-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      margin-right: 12px;
+    }
+  }
+
+  .form-control {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    font-size: 1rem;
+  }
+
+  .rating-stars {
+    margin-bottom: 16px;
+    .star {
+      font-size: 1.5rem;
+      color: #ddd;
+      cursor: pointer;
+      &.filled {
+        color: #f7b500;
+      }
+    }
+  }
+
+  .submit-btn {
+    background-color: #7BBCB0;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 1rem;
+    &:hover {
+      background-color: #6aa89a;
+    }
+  }
+}
+
+
+
+// .review-filter {
+//     padding: 10px;
+//     background-color: #eef4fa;
+//     .filter-icon {
+//         font-size: 1.2rem;
+//         color: #000;
+//         font-weight: 400;
+//     }
+//     .sort-btn {
+//         flex-grow: 1; // Giảm kích thước xuống 0.5 phần
+//         max-width: 200px ; // Giới hạn chiều rộng tối đa
+//     }
+//     .filter-btn {
+//         flex-grow: 2 ; // Giảm kích thước xuống 0.5 phần
+//         max-width: 300px; // Giới hạn chiều rộng tối đa
+//     }
+//     .search-area {
+//         flex-grow: 5 ; // Tăng kích thước lên 8 phần
+//         min-width: 200px; // Đảm bảo chiều rộng tối thiểu
+//     }
+// }

@@ -1,0 +1,80 @@
+// _variables.scss
+
+$navbar-height: 80px;
+
+// 🎨 Màu sắc
+$primary-color: #7BBCB0;
+$secondary-color: #FC7948;
+$nameUser-color: #FFA432;
+$background-color: #f8f9fa;
+$text-color: #333;
+$text-color-gray: #778088;
+
+// 🌐 Breakpoints
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+// _variables.scss
+
+// Colors
+$success-color: #28a745;
+$danger-color: #dc3545;
+$warning-color: #ffc107;
+$info-color: #17a2b8;
+$light-color: #f8f9fa;
+$dark-color: #343a40;
+
+// Typography
+$font-family-base: 'Roboto', sans-serif;
+$font-size-base: 16px;
+$line-height-base: 1.5;
+$font-weight-normal: 400;
+$font-weight-bold: 700;
+
+// Spacing
+$spacing-unit: 8px;
+$spacing-xs: $spacing-unit;
+$spacing-sm: $spacing-unit * 2;
+$spacing-md: $spacing-unit * 3;
+$spacing-lg: $spacing-unit * 4;
+$spacing-xl: $spacing-unit * 5;
+
+// Breakpoints
+$breakpoint-xs: 0;
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+
+// Border
+$border-radius-base: 4px;
+$border-color-base: #dee2e6;
+
+// Shadows
+$box-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+$box-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+$box-shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+
+
+// Transitions
+$transition-base: all 0.3s ease-in-out;
+
+// Z-index
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;
+
+// ChatBot specific
+$chatbot-bg: #f0f2f5;
+$chatbot-primary: #0084ff;
+$chatbot-secondary: #e4e6eb;
+$chatbot-text: #050505;
+$chatbot-message-bg: #ffffff;
+$chatbot-user-message-bg: #0084ff;
+$chatbot-user-message-color: #ffffff;
