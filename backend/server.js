@@ -31,6 +31,7 @@ const resetPasswordRoutes = require("./routes/resetPasswordRoutes");
 app.use(cors({
   origin: [
     'http://localhost:3000', // Development
+    'http://127.0.0.1:3000', // Development via loopback IP
     'http://54.219.205.247', // EC2 IP
     'http://tourguideeeee.fun', // Domain
     'http://www.tourguideeeee.fun' // WWW Domain
@@ -74,4 +75,3 @@ app.get("/api/health", (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Server chạy tại http://localhost:${PORT}`);
 });
-

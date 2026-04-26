@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { GoCommentDiscussion } from "react-icons/go";
-import  ChatBox from "./ChatBox"; // Import component Messages của bạn
-import { MdCancel } from "react-icons/md";
+import { IoChatbubbleEllipses } from "react-icons/io5";
+import ChatBox from "./ChatBox";
 import "./ChatBot.scss";
 
 const FloatingChatButton = () => {
@@ -10,16 +9,16 @@ const FloatingChatButton = () => {
     return (
       <div className="chat-container">
         {isOpen && (
-            <div style={{ position: "fixed", bottom: 0, right: 0, zIndex: 1000 }}>
-                <ChatBox />
-                <button onClick={() => setIsOpen(!isOpen)} className="chat-button canncel-button">
-                    <MdCancel size={24} />
-                </button>
-            </div>
+            <ChatBox onClose={() => setIsOpen(false)} />
         )}
         {!isOpen &&
-        <button onClick={() => setIsOpen(!isOpen)} className="chat-button">
-             <GoCommentDiscussion size={24} />
+        <button
+          onClick={() => setIsOpen(true)}
+          className="chat-button"
+          aria-label="Mở chatbot"
+          title="Mở chatbot"
+        >
+             <IoChatbubbleEllipses size={26} />
         </button>}
       </div>
     );

@@ -1,107 +1,91 @@
-const {sql, getPool} = require("../config/db");
-const axios = require('axios');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const {
+  fetchPythonChatbotResponse,
+  normalizeUserId,
+} = require("../services/pythonChatbotClient");
+const {
+  normalizeChatEntities,
+  searchToursByChatEntities,
+} = require("../services/chatTourSearchService");
+const {
+  shouldQueryDbForStatus,
+  resolveFinalStatus,
+  buildChatApiResponse,
+} = require("../services/chatResponseMapper");
 
+const createGetRespondChat = (dependencies = {}) => {
+  const fetchChatbotResponse =
+    dependencies.fetchPythonChatbotResponse || fetchPythonChatbotResponse;
+  const normalizeEntities =
+    dependencies.normalizeChatEntities || normalizeChatEntities;
+  const searchTours =
+    dependencies.searchToursByChatEntities || searchToursByChatEntities;
 
-const PYTHON_API_URL = 'http://localhost:8000/chat';
+  return async (req, res) => {
+    try {
+      const query =
+        typeof req.body?.query === "string" ? req.body.query.trim() : "";
 
-const getTourByChat = async (location, datetime, price) =>{
-    console.log("location: ", location);
-   
-    console.log("price: ", price.replace(/\.|,/g, ''));
-    try{
-      let formattedDatetime = null;
-      const currentYear = new Date().getFullYear(); // Lấy năm hiện tại (2025)
-      if (datetime) {
-          const date = new Date(datetime);
-          if (!isNaN(date)) {
-              // Kiểm tra năm của datetime
-              if (date.getFullYear() !== currentYear) {
-                  // Đặt lại năm thành năm hiện tại
-                  date.setFullYear(currentYear);
-              }
-              formattedDatetime = date.toISOString().split('T')[0]; // YYYY-MM-DD
-          } else {
-              throw new Error('Invalid datetime format');
-          }
+      if (!query) {
+        return res.status(400).json({ error: "Query is required" });
       }
-      const pool = await getPool();
-      const result = await pool.request()
-      .input('location', sql.NVarChar, location)
-      .input('datetime', sql.Date, formattedDatetime)
-      .input('price', sql.Decimal(15, 2), price.replace(/\.|,/g, ''))
-      .query(`SELECT t.tour_id, t.name, t.destination,t.start_date,t.end_date,t.duration, tp.price, tp.age_group
-          FROM Tour AS t
-          LEFT JOIN Tour_Price AS tp 
-          ON t.tour_id = tp.tour_id WHERE t.status = 'active' 
-          AND tp.age_group = 'adultPrice'
-          AND (t.destination LIKE '%' + @location + '%' OR t.name LIKE '%' + @location + '%')
-          AND t.start_date >= @datetime
-          AND tp.price <= @price
-          `);
-      console.log("datetime: ", datetime);
-      console.log("SQL Query:", result.query);
-        // Nhóm dữ liệu theo tour_id
-      const toursMap = [];
-      result.recordset.forEach((row) => {
-          toursMap.push({
-            tour_id: row.tour_id,
-            name: row.name,
-            destination: row.destination,
-            start_date: row.start_date,
-            end_date: row.end_date,
-            duration: row.duration,
-            prices: row.price,
-          })
+
+      const userId = normalizeUserId(
+        req.body?.user_id || req.body?.userId || req.user?.userId
+      );
+      const pythonPayload = await fetchChatbotResponse(query, { userId });
+      const normalizedEntities = normalizeEntities(pythonPayload.entities);
+      const shouldQueryDb = shouldQueryDbForStatus(pythonPayload.status);
+
+      let tourSearchResult = {
+        entities: normalizedEntities,
+        tourlist: [],
+        hasSearchFilters: false,
+        queryExecuted: false,
+      };
+
+      if (shouldQueryDb) {
+        tourSearchResult = await searchTours(normalizedEntities);
+      }
+
+      const finalStatus = resolveFinalStatus({
+        pythonStatus: pythonPayload.status,
+        tourCount: tourSearchResult.tourlist.length,
       });
-      // const tours = Object.values(toursMap);
-      return toursMap
+
+      return res.status(200).json(
+        buildChatApiResponse({
+          pythonPayload,
+          finalStatus,
+          entities: tourSearchResult.entities || normalizedEntities,
+          tourlist: tourSearchResult.tourlist,
+        })
+      );
     } catch (error) {
-        console.error('Error querying tours:', error.message);
-        throw error;
+      const errorMessage =
+        error.response?.data?.message || error.message || "Something went wrong";
+
+      console.error("Chat integration error:", errorMessage);
+
+      const statusCode =
+        error.name === "ChatbotContractError" ||
+        error.code === "ECONNREFUSED" ||
+        error.code === "ECONNABORTED"
+          ? 502
+          : 500;
+
+      return res.status(statusCode).json({
+        error:
+          statusCode === 502
+            ? "Chatbot service is unavailable or returned an invalid response"
+            : "Something went wrong",
+      });
     }
-
-}
-
-
-const getRespondChat = async (req, res) => {
-  try {
-    const { query } = req.body;
-    if (!query) {
-      return res.status(400).json({ error: 'Query is required' });
-    }
-
-    // Gọi API của chatbot Python
-    const chatbotResponse = await axios.post(PYTHON_API_URL , { query });
-    var context = chatbotResponse.data.response;
-    const response_infor = chatbotResponse.data
-    console.log(response_infor);
-    console.log('respond:', context);
-    if(response_infor.status === "success"){
-      try{
-        const tourList = await getTourByChat(response_infor.location, response_infor.time, response_infor.price)
-        console.log("tourList: ", tourList);
-        if (tourList.length === 0){
-          return res.json({ response: "Xin lỗi, hiện tại không có tour nào phù hợp với yêu cầu của bạn. Vui lòng chọn tour khác hoặc gọi đến số hotline: 0919xxxxx để được tư vấn ạ." });
-        }
-        return res.json({ response: context , tourlist: tourList });
-      }catch (error) {
-        console.error('Error:', error.message);
-        return res.status(500).json({ error: 'Something went wrong' });
-      }
-
-    }
-
-
-    return res.json({ response: context });
-  } catch (error) {
-    console.error('Error:', error.message);
-    return res.status(500).json({ error: 'Something went wrong' });
-  }
+  };
 };
 
-
+const getRespondChat = createGetRespondChat();
 
 module.exports = {
   getRespondChat,
+  createGetRespondChat,
 };

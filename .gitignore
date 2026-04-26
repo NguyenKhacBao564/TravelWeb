@@ -23,10 +23,14 @@ backend/.cache/
 # Bỏ qua thư mục ảnh AdminDesign
 AdminDesign/
 # Bỏ qua thư mục build (React, Next.js, hoặc các dự án frontend/backend)
+build/
 frontend/build/
 frontend/.next/
 frontend/out/
 backend/build/
+
+# Bỏ qua artifact sinh ra khi test bằng Playwright CLI
+.playwright-cli/
 
 # Ignore node_modules
 frontend/node_modules/
@@ -113,5 +117,4 @@ backend/DOCKER-GUIDE.md
 backend/Makefile
 backend/Dockerfile
 backend/.dockerignore
-
 
