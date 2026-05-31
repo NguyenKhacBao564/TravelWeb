@@ -1,4 +1,4 @@
-import { Routes, Route, Link, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import "./styles/payment.css";
 import FloatingChat from "./layouts/ChatBot/FloatingChat";
 import Page from "./pages/User/Home";
@@ -17,7 +17,6 @@ import BusinessEmployee from "./pages/BusinessEmployee/BusinessEmployee";
 import AddNewTour from "./pages/BusinessEmployee/AddNewTour/AddNewTour";
 import InforUser from "./pages/User/InforUser";
 import ConsultantEmployee from "./pages/ConsultantEmployee/ConsultantEmployee";
-import Chatbot from "./pages/ConsultantEmployee/ChatBot";
 import ResponeSupport from "./pages/ConsultantEmployee/ResponeSupport";
 import ResponeDetail from "./pages/ConsultantEmployee/ResponeDetail";
 import { TourProvider } from "./context/TourContext";
