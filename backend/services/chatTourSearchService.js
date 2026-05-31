@@ -362,20 +362,40 @@ const searchToursByChatEntities = async (
     };
   }
 
-  const pool = await poolGetter();
-  const request = pool.request();
+  let pool;
+  try {
+    pool = await poolGetter();
+  } catch (dbErr) {
+    // MSSQL unavailable — return empty tourlist, keep entities from Python.
+    // AI chatbot response is still valid; DB is non-critical for chat flow.
+    return {
+      ...searchPlan,
+      queryExecuted: false,
+      tourlist: [],
+    };
+  }
 
-  searchPlan.params.forEach((param) => {
-    request.input(param.name, param.type, param.value);
-  });
+  try {
+    const request = pool.request();
 
-  const result = await request.query(searchPlan.query);
+    searchPlan.params.forEach((param) => {
+      request.input(param.name, param.type, param.value);
+    });
 
-  return {
-    ...searchPlan,
-    queryExecuted: true,
-    tourlist: result.recordset.map(mapChatSearchTour),
-  };
+    const result = await request.query(searchPlan.query);
+
+    return {
+      ...searchPlan,
+      queryExecuted: true,
+      tourlist: result.recordset.map(mapChatSearchTour),
+    };
+  } catch (queryErr) {
+    return {
+      ...searchPlan,
+      queryExecuted: false,
+      tourlist: [],
+    };
+  }
 };
 
 module.exports = {
