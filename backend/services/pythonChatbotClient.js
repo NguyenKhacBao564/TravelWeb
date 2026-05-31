@@ -5,6 +5,7 @@ const DEFAULT_PYTHON_CHATBOT_URL =
 const DEFAULT_TIMEOUT_MS = Number(
   process.env.PYTHON_CHATBOT_TIMEOUT_MS || 15000
 );
+const HEALTH_TIMEOUT_MS = 3000;
 const USER_ID_MAX_LENGTH = 128;
 
 const SUPPORTED_CHAT_STATUSES = new Set([
@@ -92,6 +93,54 @@ const normalizeUserId = (userId) => {
   return normalized.slice(0, USER_ID_MAX_LENGTH);
 };
 
+const deriveHealthUrl = (chatUrl) => {
+  try {
+    const url = new URL(chatUrl);
+    url.pathname = "/health";
+    return url.toString();
+  } catch {
+    const base = chatUrl.replace(/\/chat\/?$/, "");
+    return `${base}/health`;
+  }
+};
+
+const fetchPythonChatbotHealth = async (
+  {
+    httpClient = axios,
+    url = DEFAULT_PYTHON_CHATBOT_URL,
+    timeout = HEALTH_TIMEOUT_MS,
+  } = {}
+) => {
+  const healthUrl = deriveHealthUrl(url);
+  const start = Date.now();
+  try {
+    await httpClient.get(healthUrl, { timeout });
+    return {
+      configured: true,
+      status: "ok",
+      health_url: healthUrl,
+      latency_ms: Date.now() - start,
+    };
+  } catch (err) {
+    const latency = Date.now() - start;
+    const errorMessage =
+      err.code === "ECONNREFUSED"
+        ? "connection refused"
+        : err.code === "ENOTFOUND"
+        ? "host not found"
+        : err.code === "ETIMEDOUT" || err.code === "ECONNABORTED"
+        ? "connection timed out"
+        : "unavailable";
+    return {
+      configured: true,
+      status: "unavailable",
+      health_url: healthUrl,
+      latency_ms: latency,
+      error: errorMessage,
+    };
+  }
+};
+
 const fetchPythonChatbotResponse = async (
   query,
   {
@@ -114,8 +163,12 @@ const fetchPythonChatbotResponse = async (
 
 module.exports = {
   DEFAULT_PYTHON_CHATBOT_URL,
+  DEFAULT_TIMEOUT_MS,
+  HEALTH_TIMEOUT_MS,
   ChatbotContractError,
   normalizePythonChatbotPayload,
   normalizeUserId,
   fetchPythonChatbotResponse,
+  fetchPythonChatbotHealth,
+  deriveHealthUrl,
 };

@@ -44,6 +44,19 @@ const resolveMessage = ({
   return DEFAULT_MESSAGES[finalStatus] || trimmedMessage || "";
 };
 
+const buildFallbackResponse = () => ({
+  status: "ai_unavailable",
+  message:
+    "Trợ lý AI hiện chưa phản hồi được. Bạn vẫn có thể tìm tour bằng bộ lọc thông thường hoặc thử lại sau.",
+  response:
+    "Trợ lý AI hiện chưa phản hồi được. Bạn vẫn có thể tìm tour bằng bộ lọc thông thường hoặc thử lại sau.",
+  entities: {},
+  tourlist: [],
+  missing_fields: [],
+  faq_sources: [],
+  fallback_used: true,
+});
+
 const buildChatApiResponse = ({
   pythonPayload,
   finalStatus,
@@ -72,6 +85,14 @@ const buildChatApiResponse = ({
     responsePayload.faq_sources = pythonPayload.faq_sources;
   }
 
+  // Preserve search_metadata from Python chatbot for future AI insights dashboard
+  if (
+    pythonPayload.search_metadata !== undefined &&
+    pythonPayload.search_metadata !== null
+  ) {
+    responsePayload.search_metadata = pythonPayload.search_metadata;
+  }
+
   return responsePayload;
 };
 
@@ -80,4 +101,5 @@ module.exports = {
   shouldQueryDbForStatus,
   resolveFinalStatus,
   buildChatApiResponse,
+  buildFallbackResponse,
 };
