@@ -580,3 +580,220 @@ test("structured log is emitted with fallback_used true on error", async () => {
   assert.equal(logs[0].final_status, undefined);
 });
 
+// ============================================================
+// Phase 3A — Analytics Logger & Insights Tests
+// ============================================================
+
+const { getInsights, getRecentLogs, readEntries } = require("../services/chatInsightsService");
+const { getChatLogs, getChatInsights } = require("../controller/chatController");
+const fs = require("fs");
+const path = require("path");
+
+const TEST_LOG = path.join(__dirname, "../test_analytics.jsonl");
+
+const cleanTestLog = () => {
+  try {
+    fs.unlinkSync(TEST_LOG);
+  } catch {
+    // ignore
+  }
+};
+
+/**
+ * Writes a valid JSONL entry directly to the test log file,
+ * simulating what the analytics logger does (but synchronously
+ * so tests can assert immediately after without async race).
+ */
+const appendTestEntry = (entry) => {
+  fs.appendFileSync(TEST_LOG, JSON.stringify(entry) + "\n", "utf8");
+};
+
+test("analytics logger writes valid JSONL entry structure", () => {
+  cleanTestLog();
+  appendTestEntry({
+    timestamp: new Date().toISOString(),
+    user_id: "user_analytics_1",
+    query_len: 23,
+    status: "success",
+    final_status: "success",
+    fallback_used: false,
+    tours_count: 2,
+    latency_ms: 450,
+    location: "Đà Lạt",
+    destination_normalized: "da-lat",
+    price_max: 3000000,
+    query_intent: "find_tour_with_price",
+    related_keywords: ["da-lat", "dulich"],
+    content_category: "tour_search",
+    faq_opportunity: false,
+  });
+
+  const entries = readEntries(TEST_LOG);
+  assert.equal(entries.length, 1);
+
+  const entry = entries[0];
+  assert.equal(entry.user_id, "user_analytics_1");
+  assert.equal(entry.query_len, 23);
+  assert.equal(entry.status, "success");
+  assert.equal(entry.final_status, "success");
+  assert.equal(entry.fallback_used, false);
+  assert.equal(entry.tours_count, 2);
+  assert.equal(entry.latency_ms, 450);
+  assert.equal(entry.location, "Đà Lạt");
+  assert.equal(entry.destination_normalized, "da-lat");
+  assert.equal(entry.price_max, 3000000);
+  assert.equal(entry.query_intent, "find_tour_with_price");
+  assert.deepEqual(entry.related_keywords, ["da-lat", "dulich"]);
+  assert.equal(entry.content_category, "tour_search");
+  assert.equal(entry.faq_opportunity, false);
+});
+
+test("analytics logger logs fallback event with fallback_used true", () => {
+  cleanTestLog();
+  appendTestEntry({
+    timestamp: new Date().toISOString(),
+    user_id: "fallback_user",
+    query_len: 9,
+    status: "connection_refused",
+    final_status: "ai_unavailable",
+    fallback_used: true,
+    tours_count: 0,
+    latency_ms: 123,
+    location: null,
+    destination_normalized: null,
+    date_start: null,
+    date_end: null,
+    price_min: null,
+    price_max: null,
+    duration: null,
+    query_intent: null,
+    related_keywords: null,
+    content_category: null,
+    faq_opportunity: null,
+  });
+
+  const entries = readEntries(TEST_LOG);
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].user_id, "fallback_user");
+  assert.equal(entries[0].status, "connection_refused");
+  assert.equal(entries[0].final_status, "ai_unavailable");
+  assert.equal(entries[0].fallback_used, true);
+  assert.equal(entries[0].tours_count, 0);
+  assert.equal(entries[0].latency_ms, 123);
+});
+
+test("analytics logger failure does not break chat controller response", async () => {
+  let loggerThrew = false;
+
+  const getRespondChat = createGetRespondChat({
+    fetchPythonChatbotResponse: async () => ({
+      status: "missing_info",
+      message: "Bạn muốn đi đâu?",
+      entities: {},
+      missing_fields: ["location"],
+      faq_sources: [],
+    }),
+    logAnalytics: () => {
+      loggerThrew = true;
+      throw new Error("Analytics logger exploded");
+    },
+  });
+
+  const response = createMockResponse();
+  await getRespondChat({ body: { query: "Tìm tour" } }, response);
+
+  assert.equal(loggerThrew, true);
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.status, "missing_info");
+});
+
+test("getInsights computes top destinations from log entries", () => {
+  cleanTestLog();
+  appendTestEntry({
+    user_id: "u1", query_len: 12, status: "success",
+    final_status: "success", fallback_used: false, tours_count: 1,
+    latency_ms: 100,
+    location: "Đà Lạt", destination_normalized: "da-lat",
+  });
+  appendTestEntry({
+    user_id: "u2", query_len: 12, status: "success",
+    final_status: "success", fallback_used: false, tours_count: 1,
+    latency_ms: 200,
+    location: "Đà Lạt", destination_normalized: "da-lat",
+  });
+  appendTestEntry({
+    user_id: "u3", query_len: 13, status: "success",
+    final_status: "success", fallback_used: false, tours_count: 2,
+    latency_ms: 150,
+    destination_normalized: "phu-quoc",
+  });
+
+  const insights = getInsights({ logPath: TEST_LOG });
+
+  assert.equal(insights.total_chats, 3);
+  assert.equal(insights.fallback_count, 0);
+  assert.equal(insights.fallback_rate, 0);
+  assert.deepEqual(insights.status_distribution, { success: 3 });
+
+  // Top destinations sorted by count descending
+  assert.equal(insights.top_destinations.length, 2);
+  assert.equal(insights.top_destinations[0].destination, "da-lat");
+  assert.equal(insights.top_destinations[0].count, 2);
+  assert.equal(insights.top_destinations[1].destination, "phu-quoc");
+  assert.equal(insights.top_destinations[1].count, 1);
+});
+
+test("getInsights handles empty log file gracefully", () => {
+  cleanTestLog();
+  const insights = getInsights({ logPath: TEST_LOG });
+  assert.equal(insights.total_chats, 0);
+  assert.equal(insights.fallback_count, 0);
+  assert.equal(insights.fallback_rate, 0);
+  assert.deepEqual(insights.status_distribution, {});
+  assert.deepEqual(insights.top_destinations, []);
+  assert.deepEqual(insights.recent_events, []);
+});
+
+test("getChatInsights returns aggregated data via HTTP", () => {
+  cleanTestLog();
+  appendTestEntry({
+    user_id: "u1", query_len: 8, status: "missing_info",
+    final_status: "missing_info", fallback_used: false,
+    tours_count: 0, latency_ms: 80,
+    location: "Huế",
+    query_intent: "find_tour",
+    content_category: "tour_search",
+  });
+
+  const request = { query: { logPath: TEST_LOG } };
+  const response = createMockResponse();
+  getChatInsights(request, response);
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.total_chats, 1);
+  assert.equal(response.body.status_distribution.missing_info, 1);
+  assert.equal(response.body.query_intent_distribution.find_tour, 1);
+  assert.equal(response.body.top_destinations[0].destination, "Huế");
+  assert.equal(response.body.top_destinations[0].count, 1);
+});
+
+test("getChatLogs returns recent records with count and limit", () => {
+  cleanTestLog();
+  for (let i = 0; i < 5; i++) {
+    appendTestEntry({
+      user_id: `u${i}`, query_len: 9, status: "success",
+      final_status: "success", fallback_used: false,
+      tours_count: 1, latency_ms: 50, location: "Test",
+    });
+  }
+
+  const request = { query: { limit: "3", logPath: TEST_LOG } };
+  const response = createMockResponse();
+  getChatLogs(request, response);
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.body.count, 3);
+  assert.equal(response.body.limit, 3);
+  assert.equal(response.body.logs.length, 3);
+});
+

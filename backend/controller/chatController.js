@@ -13,6 +13,8 @@ const {
   buildChatApiResponse,
   buildFallbackResponse,
 } = require("../services/chatResponseMapper");
+const { logChatEvent: defaultLogAnalytics } = require("../services/chatAnalyticsLogger");
+const { getInsights, getRecentLogs } = require("../services/chatInsightsService");
 
 const createGetRespondChat = (dependencies = {}) => {
   const fetchChatbotResponse =
@@ -24,6 +26,7 @@ const createGetRespondChat = (dependencies = {}) => {
   const buildFallback =
     dependencies.buildFallback || (() => buildFallbackResponse());
   const log = dependencies.log || ((msg) => console.log(msg));
+  const logAnalytics = dependencies.logAnalytics || defaultLogAnalytics;
 
   return async (req, res) => {
     const requestStart = Date.now();
@@ -75,6 +78,8 @@ const createGetRespondChat = (dependencies = {}) => {
         tourlist: tourSearchResult.tourlist,
       });
 
+      const totalLatency = Date.now() - requestStart;
+
       log(
         JSON.stringify({
           event: "chat_request",
@@ -82,13 +87,30 @@ const createGetRespondChat = (dependencies = {}) => {
           query_len: query.length,
           python_chatbot_latency_ms: pythonLatency,
           db_search_latency_ms: dbLatency,
-          total_request_latency_ms: Date.now() - requestStart,
+          total_request_latency_ms: totalLatency,
           python_status: pythonPayload.status,
           final_status: finalStatus,
           tours_count: tourSearchResult.tourlist.length,
           fallback_used: false,
         })
       );
+
+      // Fire-and-forget analytics — errors are swallowed so they never affect the response
+      try {
+        logAnalytics({
+          userId,
+          query,
+          pythonStatus: pythonPayload.status,
+          finalStatus,
+          fallbackUsed: false,
+          toursCount: tourSearchResult.tourlist.length,
+          latencyMs: totalLatency,
+          entities: normalizedEntities,
+          searchMetadata: pythonPayload.search_metadata || null,
+        });
+      } catch {
+        // Swallow — analytics failure must never break the chat response.
+      }
 
       return res.status(200).json(response);
     } catch (error) {
@@ -121,6 +143,25 @@ const createGetRespondChat = (dependencies = {}) => {
           fallback_used: true,
         })
       );
+
+      // Fire-and-forget analytics — errors are swallowed so they never affect the response
+      try {
+        logAnalytics({
+          userId: normalizeUserId(
+            req.body?.user_id || req.body?.userId || req.user?.userId
+          ),
+          query: typeof req.body?.query === "string" ? req.body.query : "",
+          pythonStatus: errorKey,
+          finalStatus: "ai_unavailable",
+          fallbackUsed: true,
+          toursCount: 0,
+          latencyMs: totalLatency,
+          entities: {},
+          searchMetadata: null,
+        });
+      } catch {
+        // Swallow — analytics failure must never break the chat response.
+      }
 
       // Always return stable JSON — no stack traces, no 502 breaking the UI
       return res.status(200).json(buildFallback());
@@ -158,9 +199,29 @@ const createGetChatHealth = (dependencies = {}) => {
 const getRespondChat = createGetRespondChat();
 const getChatHealth = createGetChatHealth();
 
+const getChatLogs = (req, res) => {
+  const limit = Math.min(parseInt(req.query?.limit, 10) || 50, 500);
+  const logPath = req.query?.logPath || undefined;
+  const logs = getRecentLogs(limit, logPath);
+  return res.status(200).json({
+    count: logs.length,
+    limit,
+    logs,
+  });
+};
+
+const getChatInsights = (req, res) => {
+  const limit = Math.min(parseInt(req.query?.limit, 10) || 200, 500);
+  const logPath = req.query?.logPath || undefined;
+  const insights = getInsights({ limit, logPath });
+  return res.status(200).json(insights);
+};
+
 module.exports = {
   getRespondChat,
   getChatHealth,
   createGetRespondChat,
   createGetChatHealth,
+  getChatLogs,
+  getChatInsights,
 };
