@@ -1,7 +1,7 @@
 // src/utils/sidebarItems.js
 import { FaUserLarge } from "react-icons/fa6";
 import { BiCalendarCheck } from "react-icons/bi";
-import { MdDiscount, MdPeopleAlt, MdOutlineTour } from "react-icons/md";
+import { MdDiscount, MdPeopleAlt, MdOutlineTour, MdInsights } from "react-icons/md";
 import { IoLogOutSharp } from "react-icons/io5";
 import { IoMdHome } from "react-icons/io";
 import { LiaCitySolid } from "react-icons/lia";
@@ -17,6 +17,7 @@ export const AdminSideBar = [
   { label: "Nhân viên", icon: <MdPeopleAlt />, link: "/admin/staffManagement" },
   { label: "Quản lý tour", icon: <MdOutlineTour />, link: "/admin/tourManagement" }, // Không có isLogout: true
   { label: "Quản lý chi nhánh", icon: <LiaCitySolid />, link: "/admin/branchManagement" },
+  { label: "AI Insights", icon: <MdInsights />, link: "/admin/ai-chat-insights" },
   { label: "Đăng xuất", icon: <IoLogOutSharp />, link: "/logout", isLogout: true },
 ];
 

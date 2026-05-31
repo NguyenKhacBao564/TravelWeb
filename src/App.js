@@ -42,6 +42,7 @@ import FindTour from "./pages/User/FindTour";
 import TourFavourite from "./pages/User/TourFavourite";
 import AboutUs from './pages/User/AboutUs';
 import AdminAccounts from "./pages/Admin/Accounts/AdminAccounts";
+import AIChatInsights from "./pages/Admin/AIChatInsights/AIChatInsights";
 import TourHistory from "./pages/User/TourHistory";
 import InforEmployee from "./pages/BusinessEmployee/InforEmployee/InforEmployee";
 import ForgotPassword from "./pages/User/ForgotPassword";
@@ -140,6 +141,7 @@ function App() {
               <Route path="branchManagement" element={<BranchManagement />} />
               <Route path="branchManagement/:id" element={<BranchInfo />} />
               <Route path="accounts" element={<AdminAccounts />} />
+              <Route path="ai-chat-insights" element={<AIChatInsights />} />
           </Route>
           <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<NotFound />} />
