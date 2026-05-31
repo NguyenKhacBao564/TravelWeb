@@ -64,9 +64,11 @@ app.use("/api/consultant", consultantSupportRoutes);
 app.use("/reviews", reviewRoutes);
 
 // Health check endpoint for Docker
+// Mounted ONLY at /api/health (not /chat/health) to avoid routing conflict
+// with the chat integration health endpoint in chatRoutes.js
 app.get("/api/health", (req, res) => {
-  res.status(200).json({ 
-    status: "OK", 
+  res.status(200).json({
+    status: "OK",
     timestamp: new Date().toISOString(),
     service: "tour-booking-backend"
   });
