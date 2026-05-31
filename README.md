@@ -2,6 +2,23 @@
 
 Đây là hướng dẫn thiết lập và chạy dự án này.
 
+---
+
+## Mục lục
+
+1. [Yêu cầu hệ thống](#yêu-cầu-hệ-thống)
+2. [Cài đặt dự án](#cài-đặt-dự-án)
+3. [AI Chatbot Tích hợp](#ai-chatbot-tích-hợp)
+   - [Kiến trúc](#kiến-trúc)
+   - [Luồng hoạt động](#luồng-hoạt-động)
+   - [Chạy AI Chatbot cục bộ](#chạy-ai-chatbot-cục-bộ)
+   - [Backend Endpoints](#backend-endpoints)
+   - [Giới hạn](#giới-hạn)
+4. [Chạy ứng dụng](#chạy-ứng-dụng)
+5. [Thông tin đăng nhập Test](#thông-tin-đăng-nhập-test)
+
+---
+
 ## Yêu cầu hệ thống
 
 Trước khi bắt đầu, hãy đảm bảo bạn đã cài đặt các công cụ sau:
@@ -52,7 +69,200 @@ DB_PASSWORD=your_db_password      # Mật khẩu người dùng SQL Server của
 
 Lưu ý: Thay thế your_sql_server_address, TourBookingDB, your_db_username, và your_db_password bằng thông tin cấu hình SQL Server của bạn.
 
-3. Chạy ứng dụng
+---
+
+## AI Chatbot Tích hợp
+
+### Kiến trúc
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         Frontend (React)                         │
+│  ┌─────────────────┐                        ┌────────────────┐   │
+│  │  FloatingChat   │◄──── POST /chat/chatbot│  Admin Panel   │   │
+│  │  (User trang    │                        │  /admin/      │   │
+│  │   chính)        │──── GET /chat/logs     │  ai-chat-     │   │
+│  └─────────────────┘──── GET /chat/insights │  insights     │   │
+└──────────────────────────┬──────────────────────┬──────────────┘
+                           │                      │
+                     Express.js                Express.js
+                     :3001                     :3001
+                           │                      │
+        ┌──────────────────▼──────────────────────▼───────────┐
+        │                 Backend (Node.js / Express)          │
+        │  ┌──────────────────────────────────────────────┐   │
+        │  │         chatController (createGetRespondChat)  │   │
+        │  │  1. fetchPythonChatbotResponse()               │   │
+        │  │  2. normalizeChatEntities()                    │   │
+        │  │  3. searchToursByChatEntities() (MSSQL)        │   │
+        │  │  4. resolveFinalStatus()                       │   │
+        │  │  5. logAnalytics() (JSONL)                     │   │
+        │  └──────────────────────────────────────────────┘   │
+        └──────────────┬──────────────────────────────┬────────┘
+                       │                              │
+              FastAPI :8000                    File System
+              /chat /health                  logs/chat_analytics.jsonl
+                       │
+        ┌──────────────▼──────────────────┐
+        │   Python Chatbot (FastAPI)       │
+        │  PhoBERT → Gemini LLM → FAISS   │
+        │  Intent / Entity extraction      │
+        └─────────────────────────────────┘
+```
+
+### Luồng hoạt động
+
+```
+User gửi câu hỏi
+        │
+        ▼
+Express POST /chat/chatbot
+        │
+        ▼
+Gọi Python FastAPI /chat
+  • PhoBERT intent classification
+  • Entity extraction (location, date, price)
+  • Gemini LLM generate response
+  • FAISS FAQ retrieval
+        │
+        ├─ "missing_info" → Trả lời hỏi thêm thông tin, KHÔNG truy vấn DB
+        │
+        ├─ "faq" → Trả lời FAQ, KHÔNG truy vấn DB
+        │
+        ├─ "partial_search" / "success"
+        │     │
+        │     ▼
+        │  Truy vấn MSSQL (tour name, price, dates)
+        │     │
+        │     ▼
+        │  Trả tour cards cho user
+        │
+        └─ Python unreachable → Fallback (HTTP 200, "AI hiện chưa phản hồi được")
+              │
+              ▼
+        Ghi JSONL log (fire-and-forget)
+```
+
+### Chạy AI Chatbot cục bộ
+
+**Bước 1:** Cấu hình `.env` (backend)
+
+```bash
+cd backend
+cp .env.example .env
+# Chỉnh sửa .env, thêm/bỏ comment:
+
+CHAT_ANALYTICS_ENABLED=true
+CHAT_ANALYTICS_LOG_PATH=logs/chat_analytics.jsonl
+PYTHON_CHATBOT_URL=http://localhost:8000/chat
+PYTHON_CHATBOT_TIMEOUT_MS=15000
+```
+
+**Bước 2:** Chạy Python chatbot
+
+```bash
+# Chatbot source: ../AI_Project/Chatbot_AI/
+cd ../AI_Project/Chatbot_AI
+uvicorn server:app --host 0.0.0.0 --port 8000
+```
+
+**Bước 3:** Chạy backend (port 3001)
+
+```bash
+cd backend
+npm run dev
+```
+
+**Bước 4:** Mở frontend (port 3000)
+
+```bash
+cd ..
+npm run dev
+```
+
+**Bước 5:** Kiểm tra health endpoint
+
+```bash
+# Backend health (Express)
+curl http://localhost:3001/api/health
+
+# Chatbot health (Python + Express)
+curl http://localhost:3001/chat/health
+# {"status":"ok"} = Python hoạt động
+# {"status":"degraded"} = Python không kết nối được (vẫn hoạt động với fallback)
+```
+
+### Backend Endpoints
+
+| Method | Endpoint | Mô tả |
+|--------|----------|--------|
+| `POST` | `/chat/chatbot` | Gửi câu hỏi → AI chatbot + DB tour search |
+| `GET` | `/chat/health` | Health check: Python chatbot + Express |
+| `GET` | `/chat/logs` | Danh sách event gần nhất (mặc định 50) |
+| `GET` | `/chat/insights` | Tổng hợp: total, fallback, destinations... |
+
+**POST /chat/chatbot**
+
+```bash
+curl -X POST http://localhost:3001/chat/chatbot \
+  -H "Content-Type: application/json" \
+  -d '{"query":"Tôi muốn đi Đà Lạt tháng 12 dưới 5 triệu","user_id":"user_123"}'
+```
+
+Response body (thuộc tính chính):
+
+```json
+{
+  "status": "success",
+  "message": "Em đã tìm được tour phù hợp.",
+  "entities": {
+    "location": "Đà Lạt",
+    "destination_normalized": "da-lat",
+    "date_start": "2026-12-01",
+    "date_end": "2026-12-31",
+    "price_max": 5000000
+  },
+  "tourlist": [ /* tour cards từ MSSQL */ ],
+  "missing_fields": [],
+  "search_metadata": {
+    "query_intent": "cost_planning",
+    "content_category": "tour_search",
+    "faq_opportunity": false
+  }
+}
+```
+
+**GET /chat/insights**
+
+```bash
+curl http://localhost:3001/chat/insights
+```
+
+```json
+{
+  "total_chats": 40,
+  "fallback_count": 8,
+  "fallback_rate": 0.2,
+  "status_distribution": { "success": 30, "missing_info": 10 },
+  "top_destinations": [{ "destination": "Đà Lạt", "count": 6 }],
+  "query_intent_distribution": { "find_tour_with_location": 15 },
+  "content_category_distribution": { "tour_search": 30 },
+  "faq_opportunities_count": 5,
+  "no_result_searches": 3,
+  "avg_latency_ms": 320,
+  "recent_events": [ /* max 200 event gần nhất */ ]
+}
+```
+
+### Giới hạn
+
+- **MSSQL bắt buộc cho tour cards thực:** Endpoint `/chat/chatbot` vẫn trả lời được câu hỏi (qua Python chatbot) khi MSSQL chưa cấu hình, nhưng `tourlist` sẽ rỗng. Cần chạy `sql_createTable.sql` và `sql_dataEx.sql` để có dữ liệu tour thực.
+- **JSONL analytics cho demo:** Log analytics dùng file JSONL cục bộ (`logs/chat_analytics.jsonl`), phù hợp cho môi trường phát triển/demo. Cho production, nên ghi thêm vào MSSQL hoặc dùng service log tập trung.
+- **Auth cho /chat/insights:** Endpoint insights hiện không có auth. Trong production, cần thêm middleware xác thực (JWT/API key) để chỉ admin mới truy cập được.
+
+---
+
+## 3. Chạy ứng dụng
 Sau khi đã cài đặt dependencies và cấu hình cơ sở dữ liệu, bạn có thể khởi động ứng dụng:
 
 Mở terminal/command prompt, điều hướng đến thư mục gốc của dự án và chạy: npm run dev
