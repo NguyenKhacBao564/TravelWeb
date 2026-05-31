@@ -1,5 +1,6 @@
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, useLocation } from "react-router-dom";
 import "./styles/payment.css";
+import FloatingChat from "./layouts/ChatBot/FloatingChat";
 import Page from "./pages/User/Home";
 import Register from "./pages/User/Register";
 import Login from "./pages/User/Login";
@@ -48,6 +49,28 @@ import VerifyOTP from "./pages/User/VerifyOTP";
 import ResetPasswordPage from "./pages/User/ResetPassword/ResetPasswordPage";
 import BookingHistoryCustomer from "./pages/BusinessEmployee/BookingHistoryCustomer/BookingHistoryCustomer";
 
+
+// Hide the floating chatbot on staff/admin layouts and pure auth pages.
+const CHATBOT_HIDDEN_PREFIXES = [
+  "/admin",
+  "/businessemployee",
+  "/consultantemployee",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/verifyOTP",
+  "/reset-password",
+  "/unauthorized",
+];
+
+const FloatingChatMount = () => {
+  const { pathname } = useLocation();
+  const shouldHide = CHATBOT_HIDDEN_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+  if (shouldHide) return null;
+  return <FloatingChat />;
+};
 
 function App() {
   return (
@@ -132,6 +155,7 @@ function App() {
             <Route path="request-support/:id" element={<ResponeDetail />} />
           </Route>
         </Routes>
+        <FloatingChatMount />
       </ConsultantSupportProvider>
     </div >
   );

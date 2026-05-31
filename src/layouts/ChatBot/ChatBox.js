@@ -8,8 +8,7 @@ import {
   IoSparkles,
   IoTrashOutline,
 } from "react-icons/io5";
-import axios from "axios";
-import { API_URL } from "../../utils/API_Port";
+import { sendChatbotMessage } from "../../api/chatbotAPI";
 import "./ChatBot.scss";
 
 const CHAT_USER_ID_STORAGE_KEY = "tourguide_chat_user_id";
@@ -81,11 +80,44 @@ const formatPrice = (value) => {
   return `${numericValue.toLocaleString("vi-VN")} đ`;
 };
 
+const MISSING_FIELD_HINTS = {
+  time: "Bạn muốn đi vào thời gian nào?",
+  date: "Bạn muốn đi vào thời gian nào?",
+  start_date: "Bạn muốn đi vào thời gian nào?",
+  price: "Ngân sách dự kiến của bạn là bao nhiêu?",
+  budget: "Ngân sách dự kiến của bạn là bao nhiêu?",
+  destination: "Bạn muốn đi đến đâu?",
+  location: "Bạn muốn đi đến đâu?",
+};
+
+const buildMissingInfoText = (data) => {
+  const missing = Array.isArray(data.missing_fields) ? data.missing_fields : [];
+  const hints = missing
+    .map((field) => MISSING_FIELD_HINTS[String(field).toLowerCase()])
+    .filter(Boolean);
+
+  if (hints.length === 0) {
+    return (
+      data.message ||
+      "Bạn có thể cho mình biết thêm thông tin để gợi ý tour phù hợp hơn không?"
+    );
+  }
+
+  const base =
+    data.message ||
+    "Mình cần thêm vài thông tin để gợi ý tour phù hợp hơn:";
+  return `${base}\n\n- ${hints.join("\n- ")}`;
+};
+
 const buildBotText = (data, originalInput) => {
   const normalizedInput = originalInput.trim().toLowerCase();
 
   if (GREETINGS.includes(normalizedInput)) {
     return "Xin chào! Tôi là trợ lý ảo của TourGuide. Bạn cần hỗ trợ tìm tour hay thông tin đặt chuyến?";
+  }
+
+  if (data.status === "missing_info") {
+    return buildMissingInfoText(data);
   }
 
   return (
@@ -162,11 +194,10 @@ const ChatBox = ({ onClose }) => {
     setIsLoading(true);
 
     try {
-      const response = await axios.post(`${API_URL}/chat/chatbot`, {
+      const data = await sendChatbotMessage({
         query: trimmedInput,
-        user_id: chatUserId,
+        userId: chatUserId,
       });
-      const data = response.data || {};
       const tourlist = Array.isArray(data.tourlist) ? data.tourlist : [];
 
       const botMessage = {
@@ -174,6 +205,7 @@ const ChatBox = ({ onClose }) => {
         role: "bot",
         text: buildBotText(data, trimmedInput),
         status: data.status,
+        fallbackUsed: Boolean(data.fallback_used),
         tours: tourlist,
       };
 
