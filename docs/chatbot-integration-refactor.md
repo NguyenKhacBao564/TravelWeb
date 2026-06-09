@@ -1,12 +1,14 @@
-# Chatbot Integration Contract
+# Chatbot Integration Contract (AI Agent ↔ Express)
 
 ## Responsibility split
 
-- Python chatbot service is responsible for NLP, intent detection, session/entity understanding, and deciding whether the user message is `missing_info`, `partial_search`, `success`, `no_results`, or `faq`.
-- Express backend is responsible for calling the Python service, interpreting that structured response, querying MSSQL for real tours, and shaping the final `/chat/chatbot` API response.
-- MSSQL data in this repository is the final source of truth for tours shown in the web app.
+- **AI Agent (FastAPI, `services/ai-agent/`)** is responsible for NLP, intent classification, session/entity understanding, tool routing (ReAct), RAG retrieval (FAISS), and deciding the final response status (`missing_info`, `partial_search`, `success`, `no_results`, `faq`).
+- **Express backend (`backend/`)** is responsible for: calling the AI Agent, executing MSSQL tour search tools (via internal endpoints), shaping the final `/chat/chatbot` API response, auth, rate limiting, and analytics logging.
+- **MSSQL** data in this repository is the final source of truth for tours shown in the web app.
 
-Python may return `tours`, but those are not treated as final business results. The Express layer always uses this repository's `Tour`, `Tour_Price`, and `Tour_image` tables for the rendered `tourlist`.
+The AI Agent may return `tours` from tool calls, but the Express layer validates against MSSQL via internal tool endpoints for the rendered `tourlist`.
+
+> **Note:** Previously the Python service lived at `../AI_Project/Chatbot_AI/` (external). It is being migrated into `services/ai-agent/` for self-contained repo and Docker/Cloud deployment. This doc reflects the **target in-repo contract**.
 
 ## `/chat/chatbot` response
 
@@ -72,7 +74,7 @@ Returned tour rows include the fields the current frontend already understands, 
 
 ## Verification
 
-Automated backend checks were added in [backend/tests/chatIntegration.test.js](/Users/nguyen_bao/Documents/PTIT/Junior_2/cnpm/tour-booking-web/backend/tests/chatIntegration.test.js):
+Automated backend checks were added in [backend/tests/chatIntegration.test.js](../backend/tests/chatIntegration.test.js):
 
 1. `missing_info` preserves the message and returns no tours.
 2. `faq` does not trigger DB search.
