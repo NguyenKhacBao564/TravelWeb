@@ -3,6 +3,13 @@ const express = require('express');
 
 const router = express.Router();
 
+// Import middleware
+const { authMiddleware, restrictTo } = require('../middlewares/authMiddlewares');
+
+// Apply auth to all admin routes
+router.use(authMiddleware);
+router.use(restrictTo('Admin'));
+
 // Import controllers
 const { getOverviewStats, getTourChartData, getRecentTransactions } = require('../controller/admin/dashboardControllers');
 const { approveTourById, rejectTourById, updateTourStatus, getToursByStatusAndPage } = require('../controller/admin/tourManagementControllers');
