@@ -50,10 +50,19 @@ backend/.env.production
 backend/.env.test
 backend/src/config/.env
 
-# Bỏ qua lockfile (Chỉ giữ lại một loại nếu cần)
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
+# User-uploaded media (keep directory via .gitkeep)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# IDE / tooling local state
+.expo/
+.claude/
+
+# Python (future services/ai-agent and local venvs)
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
 
 # Bỏ qua các file hệ thống
 .DS_Store
@@ -85,9 +94,8 @@ coverage/
 .vscode/launch.json
 .vscode/*.code-workspace
 
-# Bỏ qua Docker file và thư mục liên quan
+# Bỏ qua Docker local overrides
 docker-compose.override.yml
-.dockerignore
 
 # Bỏ qua thư mục backend (tương tự frontend)
 backend/node_modules/
@@ -105,18 +113,3 @@ debug.log
 # Nếu dùng MacOS
 .idea/
 *.iml
-
-docker-compose.yml
-.dockerignore
-DOCKER-GUIDE.md
-Makefile
-Dockerfile
-docker.env
-backend/Dockerfile
-backend/.dockerignore
-backend/docker-compose.yml
-backend/DOCKER-GUIDE.md
-backend/Makefile
-backend/Dockerfile
-backend/.dockerignore
-
