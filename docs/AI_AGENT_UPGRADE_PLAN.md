@@ -1,5 +1,5 @@
 # TravelWeb AI Agent Upgrade Plan
-
+#docs/AI_AGENT_UPGRADE_PLAN.md
 > **Document status:** Planning only — no implementation in this phase.  
 > **Branch context:** `plan/travelweb-ai-agent-upgrade`  
 > **Last audited:** 2026-06-09  
