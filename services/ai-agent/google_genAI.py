@@ -23,9 +23,10 @@ SYSTEM_INSTRUCTION = (
 def _get_client():
     if genai is None:
         raise RuntimeError("google-genai is not installed")
-    api_key = os.getenv("GOOGLE_API_KEY")
+    # Prefer GEMINI_API_KEY (google-genai >= 0.8), fall back to legacy GOOGLE_API_KEY.
+    api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
     if not api_key:
-        raise RuntimeError("GOOGLE_API_KEY is not configured")
+        raise RuntimeError("GEMINI_API_KEY or GOOGLE_API_KEY is not configured")
     return genai.Client(api_key=api_key)
 
 

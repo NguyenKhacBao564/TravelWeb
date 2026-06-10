@@ -48,6 +48,7 @@ const appendLog = (entry) => {
  * @param {object} params
  * @param {string}       params.userId        — normalized user ID
  * @param {string}       params.query         — raw query text
+ * @param {string}       params.requestId     — unique request ID (req.requestId)
  * @param {string}       params.pythonStatus  — status from Python chatbot
  * @param {string}       params.finalStatus   — resolved final status
  * @param {boolean}      params.fallbackUsed  — true when AI was unavailable
@@ -59,6 +60,7 @@ const appendLog = (entry) => {
 const logChatEvent = ({
   userId,
   query,
+  requestId,
   pythonStatus,
   finalStatus,
   fallbackUsed,
@@ -71,6 +73,7 @@ const logChatEvent = ({
 
   const entry = {
     timestamp: new Date().toISOString(),
+    request_id: requestId || null,
     user_id: userId || "(anonymous)",
     query_len: typeof query === "string" ? query.length : 0,
     status: pythonStatus || null,

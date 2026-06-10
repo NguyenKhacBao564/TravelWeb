@@ -83,6 +83,7 @@ const createGetRespondChat = (dependencies = {}) => {
       log(
         JSON.stringify({
           event: "chat_request",
+          request_id: req.requestId,
           user_id: userId || "(anonymous)",
           query_len: query.length,
           python_chatbot_latency_ms: pythonLatency,
@@ -100,6 +101,7 @@ const createGetRespondChat = (dependencies = {}) => {
         logAnalytics({
           userId,
           query,
+          requestId: req.requestId,
           pythonStatus: pythonPayload.status,
           finalStatus,
           fallbackUsed: false,
@@ -129,6 +131,7 @@ const createGetRespondChat = (dependencies = {}) => {
       log(
         JSON.stringify({
           event: "chat_request",
+          request_id: req.requestId,
           user_id: normalizeUserId(
             req.body?.user_id || req.body?.userId || req.user?.userId
           ) || "(anonymous)",
@@ -151,6 +154,7 @@ const createGetRespondChat = (dependencies = {}) => {
             req.body?.user_id || req.body?.userId || req.user?.userId
           ),
           query: typeof req.body?.query === "string" ? req.body.query : "",
+          requestId: req.requestId,
           pythonStatus: errorKey,
           finalStatus: "ai_unavailable",
           fallbackUsed: true,
@@ -182,6 +186,7 @@ const createGetChatHealth = (dependencies = {}) => {
     log(
       JSON.stringify({
         event: "chat_health_check",
+        request_id: req.requestId,
         python_status: pythonResult.status,
         latency_ms: pythonResult.latency_ms,
         overall_status: overallStatus,

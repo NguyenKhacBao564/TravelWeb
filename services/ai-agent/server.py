@@ -1,3 +1,5 @@
+import logging
+import os
 import re
 
 from fastapi import FastAPI
@@ -7,6 +9,32 @@ import uvicorn
 
 from pipelines.tour_pipeline import TourRetrievalPipeline
 
+
+logger = logging.getLogger(__name__)
+
+# --- readiness checks ---
+
+def _check_faq_index():
+    """Check that required FAQ files exist on disk."""
+    faq_dir = os.path.dirname(os.path.abspath(__file__))
+    index_path = os.path.join(faq_dir, "faq_index.faiss")
+    meta_path = os.path.join(faq_dir, "faq_metadata.json")
+    try:
+        return (
+            os.path.isfile(index_path)
+            and os.path.isfile(meta_path)
+            and os.path.getsize(index_path) > 0
+        )
+    except OSError:
+        return False
+
+
+def _check_api_key():
+    """Check whether GOOGLE_API_KEY or GEMINI_API_KEY is configured (value not checked)."""
+    return bool(os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY"))
+
+
+# --- app ---
 
 app = FastAPI(title="Vietnamese Travel Chatbot API")
 app.add_middleware(
@@ -76,6 +104,19 @@ def get_pipeline() -> TourRetrievalPipeline:
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.get("/ready")
+async def ready():
+    """Lightweight readiness check — does not make Gemini API calls."""
+    faq_ok = _check_faq_index()
+    key_ok = _check_api_key()
+    if faq_ok and key_ok:
+        return {"status": "ready", "faq_index": "ok", "api_key": "configured"}
+    elif faq_ok:
+        return {"status": "degraded", "faq_index": "ok", "api_key": "missing"}
+    else:
+        return {"status": "not_ready", "faq_index": "missing" if not faq_ok else "ok", "api_key": "missing" if not key_ok else "configured"}
 
 
 @app.post("/chat")
