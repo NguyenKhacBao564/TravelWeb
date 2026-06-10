@@ -12,6 +12,7 @@ import { sendChatbotMessage } from "../../api/chatbotAPI";
 import "./ChatBot.scss";
 
 const CHAT_USER_ID_STORAGE_KEY = "tourguide_chat_user_id";
+const CHAT_SESSION_ID_STORAGE_KEY = "tourguide_chat_session_id";
 
 const SUGGESTED_PROMPTS = [
   "Tìm tour Đà Lạt tháng 6 dưới 5 triệu",
@@ -32,7 +33,6 @@ const createChatUserId = () => {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return `web_${crypto.randomUUID()}`;
   }
-
   return `web_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 };
 
@@ -40,19 +40,52 @@ const getOrCreateChatUserId = () => {
   if (typeof window === "undefined" || !window.localStorage) {
     return createChatUserId();
   }
-
   try {
     const existingUserId = window.localStorage.getItem(CHAT_USER_ID_STORAGE_KEY);
     if (existingUserId) {
       return existingUserId;
     }
-
     const newUserId = createChatUserId();
     window.localStorage.setItem(CHAT_USER_ID_STORAGE_KEY, newUserId);
     return newUserId;
   } catch {
     return createChatUserId();
   }
+};
+
+const getOrCreateChatSessionId = () => {
+  if (typeof window === "undefined" || !window.localStorage) {
+    return undefined;
+  }
+  try {
+    const existing = window.localStorage.getItem(CHAT_SESSION_ID_STORAGE_KEY);
+    if (existing) {
+      return existing;
+    }
+    // No session yet — will be created on first response
+    return undefined;
+  } catch {
+    return undefined;
+  }
+};
+
+const setChatSessionId = (sessionId) => {
+  if (typeof window === "undefined" || !window.localStorage) {
+    return;
+  }
+  try {
+    if (sessionId) {
+      window.localStorage.setItem(CHAT_SESSION_ID_STORAGE_KEY, sessionId);
+    } else {
+      window.localStorage.removeItem(CHAT_SESSION_ID_STORAGE_KEY);
+    }
+  } catch {
+    // Swallow — storage errors must not break chat
+  }
+};
+
+const clearChatSessionId = () => {
+  setChatSessionId(null);
 };
 
 const formatDate = (dateStr) => {
@@ -171,6 +204,7 @@ const ChatBox = ({ onClose }) => {
     },
   ]);
   const [chatUserId] = useState(getOrCreateChatUserId);
+  const [sessionId, setSessionId] = useState(getOrCreateChatSessionId);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -197,7 +231,16 @@ const ChatBox = ({ onClose }) => {
       const data = await sendChatbotMessage({
         query: trimmedInput,
         userId: chatUserId,
+        sessionId,
       });
+
+      // Store session_id from response for subsequent requests
+      if (data.session_id) {
+        const newSessionId = data.session_id;
+        setSessionId(newSessionId);
+        setChatSessionId(newSessionId);
+      }
+
       const tourlist = Array.isArray(data.tourlist) ? data.tourlist : [];
 
       const botMessage = {
@@ -235,6 +278,8 @@ const ChatBox = ({ onClose }) => {
   };
 
   const handleClearChat = () => {
+    clearChatSessionId();
+    setSessionId(undefined);
     setMessages([]);
     setInput("");
     inputRef.current?.focus();

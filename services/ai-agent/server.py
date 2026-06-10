@@ -131,6 +131,7 @@ class AgentChatV2Request(BaseModel):
     query: str = Field(..., min_length=1, max_length=500)
     user_id: Optional[str] = Field(default=None, max_length=100)
     session_id: Optional[str] = Field(default=None, max_length=100)
+    reset_session: bool = Field(default=False)
 
     @field_validator("query")
     @classmethod
@@ -144,10 +145,10 @@ class AgentChatV2Request(BaseModel):
 @app.post("/agent/chat-v2")
 async def agent_chat_v2(request: AgentChatV2Request):
     """
-    Deterministic tool-routing agent (Phase 2A).
+    Deterministic tool-routing agent (Phase 2A, session-aware from Phase 3A).
 
     Runs in parallel with POST /chat and does not replace it.
-    Returns AgentResponse with tool_trace.
+    Returns AgentResponse with tool_trace and session memory fields.
     """
     from agent import AgentRequest, run
 
@@ -155,6 +156,7 @@ async def agent_chat_v2(request: AgentChatV2Request):
         query=request.query,
         user_id=request.user_id,
         session_id=request.session_id,
+        reset_session=request.reset_session,
     )
     return run(agent_request)
 

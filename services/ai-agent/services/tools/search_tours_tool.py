@@ -21,6 +21,7 @@ def search_tours_tool(
     people_count: Optional[int] = None,
     limit: int = 5,
     request_id: Optional[str] = None,
+    **kwargs,
 ) -> dict:
     """
     Search for tours using the Express backend's internal tool.

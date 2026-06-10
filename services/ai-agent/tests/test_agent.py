@@ -268,7 +268,7 @@ class TestAgentChatV2Endpoint:
             from agent.router import DeterministicRouter
 
         class FakeRouter(DeterministicRouter):
-            def route(self, query):
+            def route(self, query, memory_context=None):
                 from agent.router import RouteDecision
                 return RouteDecision(tool_name="nonexistent_tool", entities={}, reason="test")
 

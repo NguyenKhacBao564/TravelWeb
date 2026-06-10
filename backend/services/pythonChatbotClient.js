@@ -176,7 +176,7 @@ const DEFAULT_AGENT_V2_URL =
  * callers receive a result dict with ok=false and error_type set.
  *
  * @param {string} query
- * @param {{ httpClient?: object, url?: string, timeout?: number, userId?: string, requestId?: string }} options
+ * @param {{ httpClient?: object, url?: string, timeout?: number, userId?: string, sessionId?: string, requestId?: string }} options
  * @returns {Promise<object>} raw AgentResponse dict
  */
 const fetchPythonAgentChatV2 = async (
@@ -186,6 +186,7 @@ const fetchPythonAgentChatV2 = async (
     url = DEFAULT_AGENT_V2_URL,
     timeout = DEFAULT_TIMEOUT_MS,
     userId,
+    sessionId,
     requestId,
   } = {}
 ) => {
@@ -194,6 +195,9 @@ const fetchPythonAgentChatV2 = async (
 
   if (normalizedUserId) {
     requestBody.user_id = normalizedUserId;
+  }
+  if (sessionId) {
+    requestBody.session_id = sessionId;
   }
 
   const headers = {};

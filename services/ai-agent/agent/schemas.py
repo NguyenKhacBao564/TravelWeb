@@ -9,11 +9,12 @@ from pydantic import BaseModel, Field
 
 
 class AgentRequest(BaseModel):
-    """Incoming request to the agent."""
+    """Incoming request to the agent (Phase 3A: session-aware)."""
 
     query: str = Field(..., min_length=1, max_length=500)
     user_id: Optional[str] = Field(default=None, max_length=100)
     session_id: Optional[str] = Field(default=None, max_length=100)
+    reset_session: bool = Field(default=False, description="If true, clear session memory before processing")
 
 
 class AgentToolTrace(BaseModel):
@@ -55,4 +56,12 @@ class AgentResponse(BaseModel):
     route_source: Optional[str] = Field(
         default=None,
         description="Router mode used: deterministic | gemini | deterministic_fallback | gemini_fallback"
+    )
+    session_id: Optional[str] = Field(
+        default=None,
+        description="Session ID for multi-turn context. Returned to frontend for subsequent requests."
+    )
+    memory_used: bool = Field(
+        default=False,
+        description="Whether session memory contributed entities to this request."
     )

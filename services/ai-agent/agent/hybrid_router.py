@@ -34,7 +34,7 @@ class HybridRouter:
     def __init__(self) -> None:
         self._det = DeterministicRouter()
 
-    def route(self, query: str) -> RouteDecision:
+    def route(self, query: str, memory_context=None) -> RouteDecision:
         """
         Route a query.
 
@@ -42,7 +42,7 @@ class HybridRouter:
         out-of-domain), returns immediately. Otherwise delegates to Gemini.
         On Gemini failure, falls back to the deterministic result.
         """
-        det_result = self._det.route(query)
+        det_result = self._det.route(query, memory_context=memory_context)
 
         # Use deterministic directly for obvious cases
         if det_result.reason in _DETERMINISTIC_ONLY_REASONS:
@@ -50,7 +50,7 @@ class HybridRouter:
 
         # For tour search keywords or entity-based routing, try deterministic first
         # Gemini is for ambiguous queries where deterministic is uncertain
-        if det_result.reason in ("tour_search_keyword", "entities_found_assume_tour_search"):
+        if det_result.reason in ("tour_search_keyword", "entities_found_assume_tour_search", "memory_followup"):
             # Deterministic has a clear signal — use it directly
             return det_result
 

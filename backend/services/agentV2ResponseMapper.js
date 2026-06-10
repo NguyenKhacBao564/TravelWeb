@@ -121,6 +121,14 @@ const mapAgentV2ToFrontend = (agentResponse) => {
     result.tool_trace = toolTrace;
   }
 
+  // Forward session fields for multi-turn memory (Phase 3A)
+  if (agentResponse.session_id) {
+    result.session_id = agentResponse.session_id;
+  }
+  if (typeof agentResponse.memory_used === "boolean") {
+    result.memory_used = agentResponse.memory_used;
+  }
+
   return result;
 };
 
@@ -137,6 +145,7 @@ const buildFallback = () => ({
   faq_sources: [],
   search_metadata: null,
   fallback_used: true,
+  memory_used: false,
 });
 
 const buildDefaultMessage = (status) => {

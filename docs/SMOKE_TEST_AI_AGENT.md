@@ -594,6 +594,116 @@ Expected `route_source: "gemini"` in response on success, or `route_source: "det
 
 ---
 
+## Phase 3A: Session Memory
+
+Multi-turn context accumulation for travel queries. Session memory is **in-process** (no Redis, no database). All memory is TTL-based and capped per session.
+
+### Environment setup
+
+```bash
+# services/ai-agent/.env — add these to existing config
+# Session TTL in seconds (default 24h)
+SESSION_TTL_SECONDS=86400
+
+# Max recent turns per session (default 10)
+SESSION_MAX_TURNS=10
+
+# Debug: store raw query length in turn metadata (default false)
+DEBUG_MEMORY_STORE_TEXT=false
+```
+
+### Smoke test — multi-turn sequence
+
+Start the services first, then run the following curl sequence in two separate terminals or sequentially with the session ID:
+
+**Turn 1 — destination only:**
+
+```bash
+curl -s -X POST http://localhost:8000/agent/chat-v2 \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Tôi muốn đi Đà Lạt"}'
+```
+
+Expected response:
+```json
+{
+  "status": "success",
+  "selected_tool": "search_tours",
+  "entities": { "location": "Đà Lạt" },
+  "session_id": "<uuid>",
+  "memory_used": false,
+  "route_source": "deterministic",
+  ...
+}
+```
+
+Copy the `session_id` from the response.
+
+**Turn 2 — same session, adds price + people:**
+
+```bash
+curl -s -X POST http://localhost:8000/agent/chat-v2 \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Dưới 5 triệu, đi 2 người", "session_id": "<uuid-from-turn-1>"}'
+```
+
+Expected response:
+```json
+{
+  "status": "success",
+  "selected_tool": "search_tours",
+  "entities": { "location": "Đà Lạt", "price_max": 5000000, "people_count": 2 },
+  "session_id": "<same-uuid>",
+  "memory_used": true,
+  "route_source": "deterministic",
+  ...
+}
+```
+
+Key assertions:
+- `session_id` is the same as turn 1
+- `memory_used: true`
+- `entities` includes `location` (from turn 1 memory) and `price_max` + `people_count` (from current query)
+
+### Smoke test — follow-up refinement
+
+**Turn 1:**
+
+```bash
+curl -s -X POST http://localhost:8000/agent/chat-v2 \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Tìm tour Đà Lạt"}'
+```
+
+**Turn 2 — "còn tour nào nữa không":**
+
+```bash
+curl -s -X POST http://localhost:8000/agent/chat-v2 \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Còn tour nào nữa không", "session_id": "<uuid>"}'
+```
+
+Expected: `selected_tool: "search_tours"`, `memory_used: true`, `reason: "memory_followup"` (internal field).
+
+### Smoke test — reset session
+
+```bash
+curl -s -X POST http://localhost:8000/agent/chat-v2 \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Xóa cuộc trò chuyện", "session_id": "<uuid>", "reset_session": true}'
+```
+
+Expected: new `session_id` in response, `memory_used: false`.
+
+### Safety notes
+
+- No raw query text is stored by default. Only `content_len` (length) is stored per turn.
+- Session TTL is 24h of inactivity. Sessions auto-expire.
+- Chain-of-thought is never stored or exposed.
+- `memory_used: false` means no prior context was available — not an error.
+
+---
+
 ## Test Results Summary
 
 | Test | Command | Pass Criterion |

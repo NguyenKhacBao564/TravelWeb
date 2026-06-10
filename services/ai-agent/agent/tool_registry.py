@@ -70,7 +70,12 @@ def get_registry() -> ToolRegistry:
 # Built-in tools (registered at import time)
 # ---------------------------------------------------------------------------
 
-def _fallback_response(query: str, entities: dict, request_id: Optional[str] = None) -> dict:
+def _fallback_response(
+    query: Optional[str] = None,
+    entities: Optional[dict] = None,
+    request_id: Optional[str] = None,
+    **kwargs,
+) -> dict:
     """
     Deterministic fallback when no other tool matches.
     Returns a structured response without calling Gemini.

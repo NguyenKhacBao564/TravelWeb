@@ -3,13 +3,15 @@ import { API_URL } from "../utils/API_Port";
 
 // Send a chat message to the Express chatbot endpoint.
 // Returns the raw response payload from the backend (which may include
-// status, message, tourlist, missing_fields, fallback_used, search_metadata, ...).
-export const sendChatbotMessage = async ({ query, userId }) => {
+// status, message, tourlist, missing_fields, fallback_used, search_metadata,
+// session_id, memory_used, ...).
+export const sendChatbotMessage = async ({ query, userId, sessionId }) => {
   try {
-    const response = await axios.post(`${API_URL}/chat/chatbot`, {
-      query,
-      user_id: userId,
-    });
+    const body = { query, user_id: userId };
+    if (sessionId) {
+      body.session_id = sessionId;
+    }
+    const response = await axios.post(`${API_URL}/chat/chatbot`, body);
     return response.data || {};
   } catch (error) {
     // Surface backend payload when present (e.g. structured fallback),

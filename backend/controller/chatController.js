@@ -66,16 +66,25 @@ const createGetRespondChat = (dependencies = {}) => {
       );
 
       // Agent V2 mode: call /agent/chat-v2, skip legacy python chatbot
+      const sessionId = typeof req.body?.session_id === "string" ? req.body.session_id : undefined;
+
       if (agentV2Enabled) {
         const pythonStart = Date.now();
         const agentResponse = await fetchAgentV2Response(query, {
           userId,
+          sessionId,
           requestId: req.requestId,
         });
         pythonLatency = Date.now() - pythonStart;
 
         // agentResponse is always a dict (never raises) — safe to map
         const frontendResponse = mapAgentV2Response(agentResponse);
+
+        // Pass session_id through to frontend for subsequent requests
+        if (agentResponse.session_id && !frontendResponse.session_id) {
+          frontendResponse.session_id = agentResponse.session_id;
+        }
+
         const totalLatency = Date.now() - requestStart;
 
         // Log to console (same format as legacy path)

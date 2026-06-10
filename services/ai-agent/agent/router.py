@@ -115,16 +115,36 @@ _TOUR_ID_PATTERNS = re.compile(
 # Router class
 # ---------------------------------------------------------------------------
 
+# Follow-up / refinement keywords — indicate user is adding constraints to a previous search
+_FOLLOWUP_KEYWORDS = re.compile(
+    r"\b("
+    r"rẻ\s*hơn|rẻ\s*nữa|"
+    r"còn\s*tour|còn\s*chỗ|tour\s*nữa|tour\s*khác|"
+    r"nữa\s*không|nữa\s*không|có\s*nữa|có\s*tour\s*khác|"
+    r"thêm\s*tour|tour\s*thêm|"
+    r"đổi\s*tour|đổi\s*chỗ|"
+    r"cao\s*hơn|"
+    r"tăng\s*ngân\s*sách|tăng\s*budget"
+    r")",
+    re.IGNORECASE,
+)
+
+
 class DeterministicRouter:
     """Rule-based router that selects a tool based on keyword/pattern matching."""
 
-    def route(self, query: str) -> RouteDecision:
+    def route(
+        self,
+        query: str,
+        memory_context: Optional[dict] = None,
+    ) -> RouteDecision:
         """
         Return a RouteDecision for the given query.
 
         Steps:
         1. Extract entities (location, price, time, tour_id) from the query
-        2. Apply routing rules
+        2. Check for follow-up / refinement patterns
+        3. Apply routing rules (memory fills gaps if memory_context provided)
         """
         if not query or not isinstance(query, str):
             return RouteDecision(
@@ -136,10 +156,13 @@ class DeterministicRouter:
         query_stripped = query.strip()
         query_lower = query_stripped.lower()
 
-        # Step 1: extract entities first (needed for routing decisions)
+        # Step 1: extract entities from the query
         entities = self._extract_entities(query_stripped)
 
-        # Step 2: routing rules
+        # Step 2: follow-up / refinement detection
+        is_followup = _FOLLOWUP_KEYWORDS.search(query_stripped) is not None
+
+        # Step 3: routing rules
         if _GREETING_PATTERNS.match(query_stripped):
             return RouteDecision(
                 tool_name="fallback_response",
@@ -160,6 +183,28 @@ class DeterministicRouter:
                 entities=entities.to_dict(),
                 reason="tour_id_detected",
             )
+
+        # Memory-aware follow-up: if user refines a previous search, route to search_tours
+        # This check runs before general keyword matching so "còn tour nào nữa"
+        # (which matches no keyword) gets handled correctly.
+        if is_followup and memory_context:
+            mem_entities = memory_context.get("entities", {}) or {}
+            mem_tool = memory_context.get("last_selected_tool")
+            if mem_tool in ("search_tours", "get_tour_detail") and any([
+                mem_entities.get("location"),
+                mem_entities.get("destination_normalized"),
+                mem_entities.get("date_start"),
+                mem_entities.get("price_max"),
+            ]):
+                merged = entities.to_dict()
+                for key, val in mem_entities.items():
+                    if merged.get(key) is None and val is not None:
+                        merged[key] = val
+                return RouteDecision(
+                    tool_name="search_tours",
+                    entities=merged,
+                    reason="memory_followup",
+                )
 
         if _TOUR_SEARCH_KEYWORDS.search(query_stripped):
             return RouteDecision(
@@ -253,7 +298,7 @@ def _build_router():
 class _GeminiProxyRouter:
     """Wrapper that calls gemini_route and returns a RouteDecision."""
 
-    def route(self, query: str):
+    def route(self, query: str, memory_context: Optional[dict] = None):
         from agent.gemini_router import gemini_route
         return gemini_route(query)
 
