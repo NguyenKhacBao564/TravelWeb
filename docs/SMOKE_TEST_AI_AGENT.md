@@ -295,6 +295,80 @@ curl -s http://localhost:3001/internal/tools/tour/TOUR001 \
 
 ---
 
+## Python AI Agent Internal Tool Client Smoke Test
+
+The Python service can call Express internal tools via the `express_tools_client` module.
+
+### Setup
+
+Both services need the same `INTERNAL_SERVICE_TOKEN`:
+
+```bash
+# backend/.env
+INTERNAL_SERVICE_TOKEN=your_secure_token_here
+PYTHON_CHATBOT_URL=http://localhost:8000/chat
+```
+
+```bash
+# services/ai-agent/.env
+EXPRESS_API_URL=http://localhost:3001
+INTERNAL_SERVICE_TOKEN=your_secure_token_here
+INTERNAL_TOOL_TIMEOUT_SECONDS=5
+```
+
+### Start services
+
+```bash
+# Terminal 1: AI Agent
+npm run dev:agent
+
+# Terminal 2: Backend
+npm run dev:backend
+```
+
+### Manual Python client test
+
+Once both services are running, verify the Python client can call Express tools:
+
+```python
+# services/ai-agent/ directory
+# Requires httpx installed: pip install httpx
+
+import os
+os.environ["EXPRESS_API_URL"] = "http://localhost:3001"
+os.environ["INTERNAL_SERVICE_TOKEN"] = "your_secure_token_here"
+
+from services.express_tools_client import search_tours, get_tour_detail
+
+# Test search_tours
+result = search_tours(location="DaLat", price_max=6000000, limit=3)
+print(result["ok"], result["status"], result["data"]["total"] if result["ok"] else result["error_type"])
+
+# Test get_tour_detail
+result = get_tour_detail("TOUR001")
+print(result["ok"], result["status"], result["data"]["tour"] if result["ok"] and result["data"]["tour"] else result["error_type"])
+```
+
+Or with a one-liner curl equivalent (requires httpx installed in the Python environment):
+
+```bash
+cd services/ai-agent
+source .venv/bin/activate
+python -c "
+import os
+os.environ['EXPRESS_API_URL']='http://localhost:3001'
+os.environ['INTERNAL_SERVICE_TOKEN']='your_secure_token_here'
+from services.express_tools_client import search_tours
+import json; print(json.dumps(search_tours(location='DaLat'), indent=2, ensure_ascii=False))
+"
+```
+
+Expected: `{"ok": true, "status": "success", "tool": "search_tours", ...}`.
+
+If `ok: false` and `error_type: missing_config`, the token is not set. If `auth_error`, tokens don't match between services.
+
+---
+
 ## Test Results Summary
 
 | Test | Command | Pass Criterion |
