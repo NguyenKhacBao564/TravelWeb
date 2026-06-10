@@ -77,6 +77,7 @@ const normalizePythonChatbotPayload = (payload = {}) => {
       : [],
     tours: Array.isArray(payload.tours) ? payload.tours : [],
     faq_sources: Array.isArray(payload.faq_sources) ? payload.faq_sources : [],
+    search_metadata: payload.search_metadata || null,
   };
 };
 

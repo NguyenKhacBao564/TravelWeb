@@ -28,14 +28,15 @@ const favoriteTourRoutes = require("./routes/favoriteTourRoutes");
 const historyBookingRoutes = require("./routes/historyBookingRoutes");
 const resetPasswordRoutes = require("./routes/resetPasswordRoutes");
 
+const corsOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map(o => o.trim())
+  : [
+      'http://localhost:3000', // Development
+      'http://127.0.0.1:3000', // Development via loopback IP
+    ];
+
 app.use(cors({
-  origin: [
-    'http://localhost:3000', // Development
-    'http://127.0.0.1:3000', // Development via loopback IP
-    'http://54.219.205.247', // EC2 IP
-    'http://tourguideeeee.fun', // Domain
-    'http://www.tourguideeeee.fun' // WWW Domain
-  ], // Domain của frontend
+  origin: corsOrigins,
   credentials: true, // Cho phép gửi cookie
 }));
 app.use(express.json());

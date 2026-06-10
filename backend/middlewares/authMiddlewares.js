@@ -4,11 +4,7 @@ const ERROR_MESSAGES = require('../utils/errorConstants');
 
 const authMiddleware = (req, res, next) => {
   try {
-    console.log('Request URL:', req.originalUrl);
-    console.log('Cookie header:', req.headers.cookie);
-    console.log('Cookies:', req.cookies); // Debug cookie
     const token = req.cookies.jwt;
-    console.log('Token new:', token); // Debug token
     if (!token) {
       return res.status(401).json({
         code: ERROR_MESSAGES.AUTH.INVALID_TOKEN.code,
@@ -16,9 +12,7 @@ const authMiddleware = (req, res, next) => {
       });
     }
 
-    // const token = authHeader.split(' ')[1];
     const decoded = verifyToken(token);
-    console.log('Decoded token:', decoded); // Debug decoded token
     req.user = {
       userId: decoded.userId,
       role: decoded.role,
@@ -41,8 +35,7 @@ const restrictTo = (...allowedRoles) => {
         message: 'Thông tin người dùng không hợp lệ',
       });
     }
-    const userRole = req.user.role; // Sử dụng role_name
-    console.log('User role:', userRole); // Debug role
+    const userRole = req.user.role;
     if (!allowedRoles.includes(userRole)) {
       return res.status(403).json({
         code: ERROR_MESSAGES.AUTH.FORBIDDEN.code,

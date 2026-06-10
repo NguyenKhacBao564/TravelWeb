@@ -105,7 +105,6 @@ function App() {
           <Route path="/sale" element={<p>sale</p>} />
           <Route path="/support" element={<p>support</p>} /> */}
           <Route path="/unauthorized" element={<Unauthorized />} />
-
           <Route path="*" element={<NotFound/>} />
 
           {/* Business Employee Routes */}
@@ -142,8 +141,6 @@ function App() {
               <Route path="accounts" element={<AdminAccounts />} />
               <Route path="ai-chat-insights" element={<AIChatInsights />} />
           </Route>
-          <Route path="/unauthorized" element={<Unauthorized />} />
-          <Route path="*" element={<NotFound />} />
 
           {/* Consultant Employee Routes */}
           <Route path="/consultantemployee" element={
