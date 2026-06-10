@@ -2,7 +2,7 @@
 
 > Updated: 2026-06-10
 > Branch: `plan/travelweb-ai-agent-upgrade`
-> Phase: Cleanup (A–E) and AI Agent Phase 0 through **4A** complete
+> Phase: Cleanup (A–E) and AI Agent Phase 0 through **4B** complete
 
 ---
 
@@ -20,6 +20,15 @@
 | Phase 3A | Lightweight session memory | ✅ Complete |
 | Phase 3B | Admin AI Insights Agent V2 metrics | ✅ Complete |
 | **Phase 4A** | **FAQ + booking policy retrieval tools** | ✅ **Complete** |
+| **Phase 4B** | **Demo polish, README, CV docs, review handoff** | ✅ **Complete** |
+
+**Phase 4B deliverables:**
+- `README.md` — AI Agent positioning, architecture diagram, local demo quickstart
+- `docs/CV_PROJECT_BULLETS.md` — NLP/AI Agent and DevOps CV versions
+- `docs/SCREENSHOT_CHECKLIST.md` — portfolio screenshot/video checklist
+- `docs/CODEX_REVIEW_HANDOFF.md` — reviewer/agent handoff
+- `docs/SMOKE_TEST_AI_AGENT.md` — Full Demo Path section
+- `package.json` — `test:backend`, `test:agent`, `test:all` scripts
 
 ---
 
@@ -131,18 +140,16 @@ Key test files added in Phase 4A:
 
 ## 8. Next Recommended Phase
 
-### Phase 4B — Demo Polish and CV Documentation
+### Phase 5A — Docker Compose Local Stack
 
-After FAQ/policy tools are wired, the highest-value next step is making the portfolio demo convincing:
+Containerize the three-service demo for one-command local startup:
 
-1. Update README with Agent V2 architecture diagram and curl examples
-2. Add a short `docs/DEMO_SCRIPT.md` for interview walkthrough
-3. Polish ChatBox UI for `faq_sources` display when Agent V2 returns FAQ hits
-4. Ensure Admin Insights shows `faq_retrieval` / `booking_policy_lookup` in tool distribution
+1. `Dockerfile` for `services/ai-agent` (Python FastAPI)
+2. `Dockerfile` for `backend` (Express)
+3. `docker-compose.yml` wiring frontend, backend, ai-agent with env templates
+4. Document `docker compose up` in README
 
-**Why 4B before 5A:** Docker Compose (Phase 5A) is valuable but the agent's CV story is stronger once FAQ/policy routing is visible end-to-end in the UI and docs.
-
-**Phase 5A (Docker Compose)** remains the next infrastructure phase after 4B.
+**Alternative:** Stop here and apply to AI/NLP or full-stack AI roles — Phase 4B docs (`CV_PROJECT_BULLETS.md`, `SCREENSHOT_CHECKLIST.md`, `Full Demo Path`) are sufficient for portfolio and interview evidence without Docker.
 
 ---
 

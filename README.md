@@ -1,5 +1,118 @@
 # TravelWeb AI Agent — Ứng dụng Quản lý Tour Du lịch với AI Assistant
 
+## TravelWeb AI Agent
+
+**TravelWeb** is a Vietnamese tour booking web application with an embedded **portfolio/demo AI Agent** system. It is designed to showcase NLP and agent engineering patterns — not enterprise-scale production deployment.
+
+**Stack:** React · Express.js · Microsoft SQL Server · Python FastAPI · Gemini API · FAISS · Docker-ready multi-service layout
+
+**Agent V2 features (feature-flagged via `CHAT_AGENT_V2_ENABLED`):**
+
+| Capability | Description |
+|------------|-------------|
+| Gemini structured tool routing | Optional `gemini` / `hybrid` router modes select tools via JSON |
+| Deterministic fallback router | Rule-based routing when Gemini is off or fails |
+| Typed tool registry | `search_tours`, `get_tour_detail`, `faq_retrieval`, `booking_policy_lookup`, `fallback_response` |
+| Secure Express internal tools | Bearer `INTERNAL_SERVICE_TOKEN` — Python never queries MSSQL directly |
+| MSSQL-grounded tour recommendations | Tour inventory from Express → MSSQL |
+| FAQ & booking policy retrieval | FAISS index over `faq_index.faiss` + `faq_metadata.json` |
+| Lightweight session memory | In-process TTL store for multi-turn constraints |
+| Structured `tool_trace` | Observability without chain-of-thought |
+| Admin AI Insights | JSONL analytics: tool distribution, latency, memory usage |
+
+**Portfolio docs:** [`docs/CV_PROJECT_BULLETS.md`](docs/CV_PROJECT_BULLETS.md) · [`docs/SCREENSHOT_CHECKLIST.md`](docs/SCREENSHOT_CHECKLIST.md) · [`docs/CODEX_REVIEW_HANDOFF.md`](docs/CODEX_REVIEW_HANDOFF.md) · [`docs/SMOKE_TEST_AI_AGENT.md`](docs/SMOKE_TEST_AI_AGENT.md)
+
+### Architecture
+
+```
+React ChatBox (:3000)
+    │  POST /chat/chatbot  (+ session_id)
+    ▼
+Express API Gateway (:3001)
+    │
+    ├─ CHAT_AGENT_V2_ENABLED=false  →  Python POST /chat          (legacy pipeline)
+    └─ CHAT_AGENT_V2_ENABLED=true   →  Python POST /agent/chat-v2  (Agent V2)
+              │
+              ▼
+        Python FastAPI ai-agent (:8000)
+              │
+              ├─ Router: deterministic | gemini | hybrid  (AGENT_ROUTER_MODE)
+              ├─ Orchestrator + session memory
+              └─ Tool Registry
+                    ├─ search_tours / get_tour_detail
+                    │       → Express GET /internal/tools/*  →  MSSQL
+                    ├─ faq_retrieval / booking_policy_lookup
+                    │       → FAISS faq_index.faiss
+                    └─ fallback_response
+              │
+              ▼
+        AgentResponse (tool_trace, route_source, session_id, memory_used)
+              │
+              ▼
+        agentV2ResponseMapper  →  frontend contract (tourlist, faq_sources)
+              │
+              ▼
+        JSONL analytics  →  Admin AI Insights dashboard
+```
+
+### Local demo quickstart
+
+**Prerequisites:** Node.js 18+, Python 3.11+, MSSQL with schema seeded (`sql_createTable.sql`, `sql_dataEx.sql`).
+
+**Terminal 1 — AI Agent (port 8000):**
+
+```bash
+cd services/ai-agent
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env
+# Set in services/ai-agent/.env:
+#   GEMINI_API_KEY=...          (or GOOGLE_API_KEY)
+#   EXPRESS_API_URL=http://localhost:3001
+#   INTERNAL_SERVICE_TOKEN=...  (must match backend)
+#   AGENT_ROUTER_MODE=hybrid    (or deterministic)
+uvicorn server:app --host 0.0.0.0 --port 8000 --reload
+# Or from repo root: npm run dev:agent
+```
+
+**Terminal 2 — Backend (port 3001):**
+
+```bash
+cd backend
+npm install && cp .env.example .env
+# Set in backend/.env:
+#   CHAT_AGENT_V2_ENABLED=true
+#   AI_AGENT_CHAT_V2_URL=http://localhost:8000/agent/chat-v2
+#   PYTHON_CHATBOT_URL=http://localhost:8000/chat
+#   INTERNAL_SERVICE_TOKEN=...  (same value as ai-agent)
+#   DB_* and JWT vars for MSSQL
+npm run dev
+```
+
+**Terminal 3 — Frontend (port 3000):**
+
+```bash
+npm install
+npm run dev                     # or: npm start
+```
+
+**Quick verification:**
+
+```bash
+curl -s http://localhost:8000/health    # AI Agent liveness
+curl -s http://localhost:8000/ready       # FAQ index + API key
+curl -s http://localhost:3001/chat/health # Express + Python combined
+
+# Agent V2 tour search
+curl -s -X POST http://localhost:3001/chat/chatbot \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Tìm tour Đà Lạt dưới 5 triệu"}'
+```
+
+Full demo walkthrough: [`docs/SMOKE_TEST_AI_AGENT.md`](docs/SMOKE_TEST_AI_AGENT.md) — section **Full Demo Path**.
+
+---
+
 Đây là hướng dẫn thiết lập và chạy dự án **TravelWeb** — một ứng dụng full-stack đặt tour du lịch tích hợp AI Agent (React + Express + Python FastAPI + MSSQL).
 
 ---
@@ -80,7 +193,7 @@ TravelWeb/
 ├── src/                          # React frontend (port 3000)
 ├── backend/                      # Express API gateway (port 3001)
 ├── services/
-│   └── ai-agent/                 # Python FastAPI AI Agent (port 8000) — coming soon
+│   └── ai-agent/                 # Python FastAPI AI Agent (port 8000)
 ├── docs/                         # Tài liệu kỹ thuật & kế hoạch
 ├── sql_*.sql                     # Schema & seed data MSSQL
 ├── .env.example                  # Frontend env template
@@ -138,7 +251,7 @@ TravelWeb/
         └─────────────────────────────────┘
 ```
 
-> **Lưu ý:** Python AI service hiện đang được chuyển từ `../AI_Project/Chatbot_AI` (external) vào `services/ai-agent/` (in-repo). Xem mục [Chạy AI Agent cục bộ](#chạy-ai-agent-cục-bộ) để biết hướng dẫn cập nhật.
+> **Lưu ý:** Python AI service nằm trong `services/ai-agent/` (self-contained). Agent V2 bật qua `CHAT_AGENT_V2_ENABLED=true` trong `backend/.env`. Xem [Local demo quickstart](#local-demo-quickstart) và `docs/SMOKE_TEST_AI_AGENT.md`.
 
 ### Luồng hoạt động
 
@@ -238,7 +351,7 @@ curl http://localhost:3001/chat/health
 # {"status":"degraded"} = AI Agent không kết nối được (vẫn hoạt động với fallback)
 ```
 
-> **Migration note:** Trước đây AI chatbot nằm ở `../AI_Project/Chatbot_AI/` (ngoài repo). Hiện tại đang chuyển sang `services/ai-agent/` trong repo để tự chứa (self-contained) cho demo và deploy. Xem `docs/AI_AGENT_UPGRADE_PLAN.md` để biết roadmap chi tiết.
+> **Roadmap:** Xem `docs/AI_AGENT_UPGRADE_PLAN.md` và `docs/PROJECT_PHASE_CHECKPOINT.md` cho các phase tiếp theo (Docker Compose, cloud deploy).
 
 ### Backend Endpoints
 

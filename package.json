@@ -61,7 +61,10 @@
     "dev": "concurrently \" cd backend && npm run dev\" \" npm start\"",
     "dev:frontend": "npm start",
     "dev:backend": "cd backend && npm run dev",
-    "dev:agent": "cd services/ai-agent && uvicorn server:app --host 0.0.0.0 --port 8000 --reload"
+    "dev:agent": "cd services/ai-agent && uvicorn server:app --host 0.0.0.0 --port 8000 --reload",
+    "test:backend": "cd backend && npm test",
+    "test:agent": "cd services/ai-agent && python -m pytest",
+    "test:all": "npm run build && npm run test:backend && npm run test:agent"
   },
   "eslintConfig": {
     "extends": [

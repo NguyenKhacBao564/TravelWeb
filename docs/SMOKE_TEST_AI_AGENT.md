@@ -868,6 +868,89 @@ Gemini/hybrid modes also allow `faq_retrieval` and `booking_policy_lookup` in st
 
 ---
 
+## Full Demo Path
+
+End-to-end walkthrough for portfolio demo or interview rehearsal. Requires MSSQL seeded and matching `INTERNAL_SERVICE_TOKEN` in both `backend/.env` and `services/ai-agent/.env`.
+
+### 1. Start services
+
+**Terminal 1 — AI Agent:**
+
+```bash
+cd services/ai-agent
+source .venv/bin/activate
+uvicorn server:app --host 0.0.0.0 --port 8000 --reload
+```
+
+**Terminal 2 — Backend:**
+
+```bash
+cd backend
+# Ensure in .env:
+#   CHAT_AGENT_V2_ENABLED=true
+#   AI_AGENT_CHAT_V2_URL=http://localhost:8000/agent/chat-v2
+#   INTERNAL_SERVICE_TOKEN=<shared-secret>
+npm run dev
+```
+
+**Terminal 3 — Frontend:**
+
+```bash
+npm run dev
+```
+
+### 2. Verify health
+
+```bash
+curl -s http://localhost:8000/health
+curl -s http://localhost:8000/ready
+curl -s http://localhost:3001/chat/health
+```
+
+### 3. Demo query sequence
+
+Run via ChatBox UI or curl against Express (`POST /chat/chatbot`). Copy `session_id` from each response for multi-turn steps.
+
+| Step | Query | Expected `selected_tool` | Key response fields |
+|------|-------|--------------------------|---------------------|
+| 1 | `Tìm tour Đà Lạt dưới 5 triệu` | `search_tours` | `tourlist`, `route_source`, `tool_trace`, `session_id`, `memory_used: false` |
+| 2 | `Dưới 5 triệu, đi 2 người` (same `session_id`) | `search_tours` | `memory_used: true`, merged `entities` (location + price + people) |
+| 3 | `Hủy tour được không?` | `booking_policy_lookup` | `status: faq`, `faq_sources`, `data.policy_category: cancellation` |
+| 4 | `Thanh toán bằng MoMo được không?` | `booking_policy_lookup` | `faq_sources`, `data.policy_category: payment` |
+| 5 | `TourGuide là gì?` | `faq_retrieval` | `faq_sources`, `status: faq` |
+
+**curl example (step 1):**
+
+```bash
+curl -s -X POST http://localhost:3001/chat/chatbot \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Tìm tour Đà Lạt dưới 5 triệu"}' | jq '{status, selected_tool: .search_metadata.selected_tool, route_source: .search_metadata.route_source, session_id, memory_used, tour_count: (.tourlist | length), tool_trace}'
+```
+
+**curl example (step 2 — replace SESSION_ID):**
+
+```bash
+curl -s -X POST http://localhost:3001/chat/chatbot \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Dưới 5 triệu, đi 2 người", "session_id": "SESSION_ID"}' | jq '{memory_used, entities, selected_tool: .search_metadata.selected_tool}'
+```
+
+### 4. Admin verification
+
+1. Log in as Admin
+2. Open `/admin/ai-chat-insights`
+3. Confirm Agent V2 metrics updated: `selected_tool_distribution`, `route_source_distribution`, `memory_used_count`
+
+### 5. Pass criteria
+
+- All five queries return HTTP 200 with stable JSON (no 502/500 to frontend)
+- Tour steps return `tourlist` when MSSQL has matching data
+- Policy/FAQ steps return `faq_sources` when FAISS index matches
+- `tool_trace` present and sanitized (no chain-of-thought)
+- Legacy path still works when `CHAT_AGENT_V2_ENABLED=false` (smoke separately)
+
+---
+
 ## Test Results Summary
 
 | Test | Command | Pass Criterion |
