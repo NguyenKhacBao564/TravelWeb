@@ -450,6 +450,81 @@ curl -s -X POST http://localhost:8000/agent/chat-v2 \
 
 ---
 
+## Enable Agent V2 through Express Backend (Phase 2B)
+
+When `CHAT_AGENT_V2_ENABLED=true`, Express `POST /chat/chatbot` routes through the Python agent's `/agent/chat-v2` endpoint instead of the legacy `/chat`. The legacy path remains available and unchanged.
+
+**This is a feature-flag. Default is `false` — the existing `/chat/chatbot` behavior is unchanged.**
+
+### Setup
+
+```bash
+# backend/.env — enable agent v2 routing
+CHAT_AGENT_V2_ENABLED=true
+AI_AGENT_CHAT_V2_URL=http://localhost:8000/agent/chat-v2
+
+# services/ai-agent/.env
+EXPRESS_API_URL=http://localhost:3001
+INTERNAL_SERVICE_TOKEN=your_secure_token_here
+INTERNAL_TOOL_TIMEOUT_SECONDS=5
+```
+
+### Smoke test
+
+Both services must be running:
+
+```bash
+# Terminal 1: AI Agent
+npm run dev:agent
+
+# Terminal 2: Backend
+npm run dev:backend
+
+# curl through Express — uses agent v2 when CHAT_AGENT_V2_ENABLED=true
+curl -s -X POST http://localhost:3001/chat/chatbot \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Tìm tour Đà Lạt dưới 5 triệu"}'
+```
+
+**Expected response shape (when agent v2 is enabled):**
+
+```json
+{
+  "status": "success",
+  "message": "...",
+  "response": "...",
+  "entities": { "location": "Đà Lạt", "price_max": 5000000 },
+  "missing_fields": [],
+  "tourlist": [...],
+  "faq_sources": [],
+  "search_metadata": {
+    "selected_tool": "search_tours",
+    "total": 2,
+    "has_filters": true
+  },
+  "tool_trace": [
+    {
+      "step": 1,
+      "selected_tool": "search_tours",
+      "tool_status": "success",
+      "latency_ms": 123.4,
+      "error_type": null,
+      "result_summary": "search_tours returned 2 tour(s)"
+    }
+  ],
+  "fallback_used": false
+}
+```
+
+### Notes
+
+- `POST /chat/chatbot` remains the **unchanged default** when `CHAT_AGENT_V2_ENABLED=false`.
+- Agent v2 errors (timeout, connection refused, auth failure) return HTTP 200 with `status: ai_unavailable` — the frontend never sees a 502.
+- The `tool_trace` field exposes only structured execution metadata, not chain-of-thought.
+- If `CHAT_AGENT_V2_ENABLED=true` is set, `PYTHON_CHATBOT_URL` (legacy) is not called.
+
+---
+
 ## Test Results Summary
 
 | Test | Command | Pass Criterion |

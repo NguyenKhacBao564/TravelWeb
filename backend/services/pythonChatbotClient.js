@@ -162,14 +162,123 @@ const fetchPythonChatbotResponse = async (
   return normalizePythonChatbotPayload(response.data);
 };
 
+// ---------------------------------------------------------------------------
+// Agent V2 client — calls POST /agent/chat-v2 on the Python service
+// ---------------------------------------------------------------------------
+
+const DEFAULT_AGENT_V2_URL =
+  process.env.AI_AGENT_CHAT_V2_URL || "http://localhost:8000/agent/chat-v2";
+
+/**
+ * Calls the Python agent's /agent/chat-v2 endpoint.
+ *
+ * Returns the raw AgentResponse body. Errors are never raised —
+ * callers receive a result dict with ok=false and error_type set.
+ *
+ * @param {string} query
+ * @param {{ httpClient?: object, url?: string, timeout?: number, userId?: string, requestId?: string }} options
+ * @returns {Promise<object>} raw AgentResponse dict
+ */
+const fetchPythonAgentChatV2 = async (
+  query,
+  {
+    httpClient = axios,
+    url = DEFAULT_AGENT_V2_URL,
+    timeout = DEFAULT_TIMEOUT_MS,
+    userId,
+    requestId,
+  } = {}
+) => {
+  const requestBody = { query };
+  const normalizedUserId = normalizeUserId(userId);
+
+  if (normalizedUserId) {
+    requestBody.user_id = normalizedUserId;
+  }
+
+  const headers = {};
+  if (requestId) {
+    headers["X-Request-ID"] = requestId;
+  }
+
+  let response;
+  try {
+    response = await httpClient.post(url, requestBody, { timeout, headers });
+  } catch (err) {
+    if (err.response) {
+      const status = err.response.status;
+      if (status === 401 || status === 403) {
+        return {
+          ok: false,
+          error_type: "auth_error",
+          status: `HTTP ${status}`,
+          message: "Agent V2 authentication failed",
+        };
+      }
+      if (status >= 500) {
+        return {
+          ok: false,
+          error_type: "server_error",
+          status: `HTTP ${status}`,
+          message: "Agent V2 server error",
+        };
+      }
+      return {
+        ok: false,
+        error_type: "bad_response",
+        status: `HTTP ${status}`,
+        message: "Agent V2 returned non-success status",
+      };
+    }
+
+    const code = err.code || "";
+    if (code === "ECONNREFUSED") {
+      return {
+        ok: false,
+        error_type: "connection_error",
+        status: "connection refused",
+        message: "Cannot connect to Agent V2 service",
+      };
+    }
+    if (code === "ETIMEDOUT" || code === "ECONNABORTED") {
+      return {
+        ok: false,
+        error_type: "timeout",
+        status: "timeout",
+        message: "Agent V2 request timed out",
+      };
+    }
+    return {
+      ok: false,
+      error_type: "connection_error",
+      status: "error",
+      message: err.message || "Unknown error",
+    };
+  }
+
+  // Non-2xx responses
+  if (response.status < 200 || response.status >= 300) {
+    return {
+      ok: false,
+      error_type: "server_error",
+      status: `HTTP ${response.status}`,
+      message: "Agent V2 returned non-success status",
+    };
+  }
+
+  return response.data;
+};
+
 module.exports = {
   DEFAULT_PYTHON_CHATBOT_URL,
+  DEFAULT_AGENT_V2_URL,
   DEFAULT_TIMEOUT_MS,
   HEALTH_TIMEOUT_MS,
   ChatbotContractError,
   normalizePythonChatbotPayload,
   normalizeUserId,
   fetchPythonChatbotResponse,
+  fetchPythonAgentChatV2,
   fetchPythonChatbotHealth,
   deriveHealthUrl,
 };

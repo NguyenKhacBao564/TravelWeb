@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "node --test tests/chatIntegration.test.js tests/internalTools.test.js",
+    "test": "node --test tests/chatIntegration.test.js tests/internalTools.test.js tests/agentV2Integration.test.js",
     "dev": "nodemon server.js"
   },
   "keywords": [],
