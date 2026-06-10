@@ -63,13 +63,22 @@ def _call_gemini(prompt: str) -> str:
 # Prompt
 # ---------------------------------------------------------------------------
 
-_TOOL_LIST = ["search_tours", "get_tour_detail", "fallback_response"]
+_TOOL_LIST = [
+    "search_tours",
+    "get_tour_detail",
+    "faq_retrieval",
+    "booking_policy_lookup",
+    "fallback_response",
+]
 
 _SYSTEM_INSTRUCTION = (
     "You are a travel assistant tool selector. "
     "Your ONLY job is to choose the correct tool for a user query. "
     "Do NOT answer the user's question. Do NOT generate tour recommendations. "
-    "Do NOT invent information. Tour data must come from search_tours or get_tour_detail tools. "
+    "Do NOT invent information. "
+    "Tour inventory must come only from search_tours or get_tour_detail. "
+    "Policy questions (cancellation, refund, payment, booking terms) → booking_policy_lookup. "
+    "General FAQ or service questions → faq_retrieval. "
     "Return ONLY valid JSON matching the schema. No explanation, no markdown, no text outside the JSON."
 )
 
@@ -80,7 +89,7 @@ _USER_TEMPLATE = (
     "Return this exact JSON shape:\n"
     "{{"
     '  "selected_tool": "<tool>", '
-    '"intent": "<find_tour|tour_detail|greeting|out_of_domain|unknown>", '
+    '"intent": "<find_tour|tour_detail|faq_question|policy_question|greeting|out_of_domain|unknown>", '
     '"entities": {{'
     '    "location": "<...>|null", '
     '    "destination_normalized": "<...>|null", '
@@ -109,7 +118,15 @@ def _build_prompt(query: str) -> str:
 # ---------------------------------------------------------------------------
 
 _ALLOWED_TOOLS = set(_TOOL_LIST)
-_VALID_INTENTS = {"find_tour", "tour_detail", "greeting", "out_of_domain", "unknown"}
+_VALID_INTENTS = {
+    "find_tour",
+    "tour_detail",
+    "faq_question",
+    "policy_question",
+    "greeting",
+    "out_of_domain",
+    "unknown",
+}
 
 
 def _parse_and_validate(raw: str) -> Optional[dict]:
@@ -213,6 +230,10 @@ def gemini_route(query: str) -> RouteDecision:
         tool = "fallback_response"
     elif intent == "unknown":
         tool = "fallback_response"
+    elif intent == "faq_question":
+        tool = "faq_retrieval"
+    elif intent == "policy_question":
+        tool = "booking_policy_lookup"
 
     # Validate tool is still registered
     registry = get_registry()

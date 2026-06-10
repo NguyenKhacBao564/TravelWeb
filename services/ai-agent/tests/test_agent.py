@@ -108,14 +108,38 @@ class TestToolRegistry:
         tool = reg.get("fallback_response")
         assert tool is not None
 
-    def test_list_tools_returns_all_three(self):
-        """list_tools should return search_tours, get_tour_detail, fallback_response."""
+    def test_faq_retrieval_is_registered(self):
+        """faq_retrieval tool should be registered."""
+        with patch.dict("os.environ", {}, clear=True):
+            from agent.tool_registry import get_registry
+        reg = get_registry()
+        tool = reg.get("faq_retrieval")
+        assert tool is not None
+        assert "query" in tool["input_fields"]
+
+    def test_booking_policy_lookup_is_registered(self):
+        """booking_policy_lookup tool should be registered."""
+        with patch.dict("os.environ", {}, clear=True):
+            from agent.tool_registry import get_registry
+        reg = get_registry()
+        tool = reg.get("booking_policy_lookup")
+        assert tool is not None
+        assert "query" in tool["input_fields"]
+
+    def test_list_tools_returns_all_five(self):
+        """list_tools should return all registered tools."""
         with patch.dict("os.environ", {}, clear=True):
             from agent.tool_registry import get_registry
         reg = get_registry()
         tools = reg.list_tools()
         names = {t["name"] for t in tools}
-        assert names == {"search_tours", "get_tour_detail", "fallback_response"}
+        assert names == {
+            "search_tours",
+            "get_tour_detail",
+            "faq_retrieval",
+            "booking_policy_lookup",
+            "fallback_response",
+        }
 
 
 # ---------------------------------------------------------------------------
@@ -183,7 +207,13 @@ class TestOrchestrator:
         assert hasattr(resp, "data")
         assert resp.status in ("success", "no_results", "missing_info", "faq", "fallback", "error")
         assert isinstance(resp.message, str)
-        assert resp.selected_tool in ("search_tours", "get_tour_detail", "fallback_response")
+        assert resp.selected_tool in (
+            "search_tours",
+            "get_tour_detail",
+            "faq_retrieval",
+            "booking_policy_lookup",
+            "fallback_response",
+        )
 
     def test_orchestrator_includes_entities_in_response(self):
         """Entities extracted by router should appear in response.entities."""
@@ -250,7 +280,13 @@ class TestAgentChatV2Endpoint:
         assert len(resp.tool_trace) >= 1
         entry = resp.tool_trace[0]
         assert entry.step == 1
-        assert entry.selected_tool in ("search_tours", "get_tour_detail", "fallback_response")
+        assert entry.selected_tool in (
+            "search_tours",
+            "get_tour_detail",
+            "faq_retrieval",
+            "booking_policy_lookup",
+            "fallback_response",
+        )
         assert entry.tool_status in ("success", "error")
 
     def test_endpoint_accepts_optional_user_id(self):

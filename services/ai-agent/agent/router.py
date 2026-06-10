@@ -5,8 +5,10 @@ Routing logic:
 1. Greeting / empty query → fallback_response
 2. Out-of-domain keywords → fallback_response
 3. Tour detail pattern (tour_id in query) → get_tour_detail
-4. Tour search keywords → search_tours
-5. Default → fallback_response
+4. Booking/policy keywords → booking_policy_lookup
+5. FAQ/general service keywords → faq_retrieval
+6. Tour search keywords → search_tours
+7. Default → fallback_response
 
 Extraction uses lightweight existing extractors where available.
 """
@@ -107,7 +109,33 @@ _OUT_OF_DOMAIN_PATTERNS = re.compile(
 )
 
 _TOUR_ID_PATTERNS = re.compile(
-    r"\b(TOUR[\w-]{2,20}|tour[_\s-]?id[:\s]+[\w-]{2,20})",
+    r"\b(TOUR[-_]?\d[\w-]*|tour[_\s-]?id[:\s]+[\w-]{2,20})",
+    re.IGNORECASE,
+)
+
+_BOOKING_POLICY_KEYWORDS = re.compile(
+    r"\b("
+    r"hủy\s*tour|hủy\s*vé|hủy\s*dịch\s*vụ|"
+    r"hoàn\s*tiền|hoàn\s*phí|"
+    r"đổi\s*lịch|thay\s*đổi\s*lịch|"
+    r"thanh\s*toán|đặt\s*cọc|trả\s*góp|"
+    r"vnpay|momo|"
+    r"chính\s*sách|điều\s*khoản|quy\s*định|"
+    r"giấy\s*tờ|hộ\s*chiếu|visa|"
+    r"hỗ\s*trợ|liên\s*hệ|tư\s*vấn|hotline|khieu\s*nại"
+    r")",
+    re.IGNORECASE,
+)
+
+_FAQ_KEYWORDS = re.compile(
+    r"\b("
+    r"faq|câu\s*hỏi\s*thường\s*gặp|"
+    r"tourguide|tour\s*guide|"
+    r"là\s*gì|là\s*ai|"
+    r"cần\s*gì|mang\s*gì|chuẩn\s*bị\s*gì|"
+    r"dịch\s*vụ\s*gì|thủ\s*tục\s*gì|"
+    r"làm\s*sao|làm\s*thế\s*nào\s*để\s*liên\s*hệ"
+    r")",
     re.IGNORECASE,
 )
 
@@ -182,6 +210,20 @@ class DeterministicRouter:
                 tool_name="get_tour_detail",
                 entities=entities.to_dict(),
                 reason="tour_id_detected",
+            )
+
+        if _BOOKING_POLICY_KEYWORDS.search(query_stripped):
+            return RouteDecision(
+                tool_name="booking_policy_lookup",
+                entities=entities.to_dict(),
+                reason="booking_policy_keyword",
+            )
+
+        if _FAQ_KEYWORDS.search(query_stripped):
+            return RouteDecision(
+                tool_name="faq_retrieval",
+                entities=entities.to_dict(),
+                reason="faq_keyword",
             )
 
         # Memory-aware follow-up: if user refines a previous search, route to search_tours
@@ -273,8 +315,12 @@ class DeterministicRouter:
         tour_id_match = _TOUR_ID_PATTERNS.search(query)
         if tour_id_match:
             raw = tour_id_match.group(0)
-            # Strip prefix
-            entities.tour_id = re.sub(r"^tour[_\s-]?id[:\s]*", "", raw, flags=re.IGNORECASE).strip()
+            entities.tour_id = re.sub(
+                r"^tour[_\s-]?id[:\s]*",
+                "",
+                raw,
+                flags=re.IGNORECASE,
+            ).strip().upper()
 
         return entities
 

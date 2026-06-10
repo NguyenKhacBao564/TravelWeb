@@ -787,6 +787,87 @@ After generating events above, the following fields should appear in the dashboa
 
 ---
 
+## Phase 4A: FAQ and Booking Policy Retrieval Tools
+
+Agent V2 can route FAQ and policy questions to retrieval tools backed by the existing `faq_index.faiss` + `faq_metadata.json` corpus.
+
+### New tools
+
+| Tool | Use case |
+|------|----------|
+| `faq_retrieval` | General service/FAQ questions (TourGuide, documents, contact) |
+| `booking_policy_lookup` | Cancellation, refund, payment, booking terms, support |
+
+### Smoke test — policy question (cancellation)
+
+```bash
+curl -s -X POST http://localhost:8000/agent/chat-v2 \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Hủy tour được không?"}' | jq .
+```
+
+Expected:
+- `selected_tool`: `"booking_policy_lookup"`
+- `route_source`: `"deterministic"` (default router mode)
+- `status`: `"faq"`
+- `data.policy_category`: `"cancellation"`
+- `data.hits`: array of FAQ hits (may be empty if index threshold filters all)
+- `tool_trace[0].selected_tool`: `"booking_policy_lookup"`
+
+### Smoke test — payment policy
+
+```bash
+curl -s -X POST http://localhost:8000/agent/chat-v2 \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Thanh toán bằng MoMo được không?"}' | jq .
+```
+
+Expected:
+- `selected_tool`: `"booking_policy_lookup"`
+- `data.policy_category`: `"payment"`
+
+### Smoke test — general FAQ
+
+```bash
+curl -s -X POST http://localhost:8000/agent/chat-v2 \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Cần giấy tờ gì khi đi tour?"}' | jq .
+```
+
+Expected:
+- `selected_tool`: `"booking_policy_lookup"` (documents category) or `faq_retrieval`
+- `status`: `"faq"`
+- `data.hits`: populated when FAQ index returns matches
+
+### Through Express (CHAT_AGENT_V2_ENABLED=true)
+
+```bash
+curl -s -X POST http://localhost:3001/chat/chatbot \
+  -H "Content-Type: application/json" \
+  -d '{"query": "TourGuide là gì?"}' | jq .
+```
+
+Expected frontend contract fields:
+- `status`: `"faq"`
+- `faq_sources`: array mapped from `data.hits` (`question`, `answer`, `score`, `source`)
+- `search_metadata.selected_tool`: `"faq_retrieval"`
+- `search_metadata.route_source`: present
+- `tool_trace`: sanitized (no chain-of-thought)
+
+### Router modes
+
+Deterministic router matches Vietnamese keywords for policy (`hủy tour`, `hoàn tiền`, `thanh toán`, `VNPay`, `MoMo`, `giấy tờ`, `hỗ trợ`, `liên hệ`, `chính sách`) and FAQ (`TourGuide`, `là gì`, `FAQ`).
+
+Gemini/hybrid modes also allow `faq_retrieval` and `booking_policy_lookup` in structured JSON output. Invalid tool names still fall back to deterministic routing.
+
+### Safety notes
+
+- Retrieval tools never raise on missing index — return `error_type: "index_missing"` instead
+- Tour inventory still comes only from `search_tours` / `get_tour_detail`
+- No chain-of-thought exposed in responses or logs
+
+---
+
 ## Test Results Summary
 
 | Test | Command | Pass Criterion |

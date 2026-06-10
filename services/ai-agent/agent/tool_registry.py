@@ -148,6 +148,32 @@ def _lazy_get_tour_detail(**kwargs: Any) -> dict:
 
 
 _registry.register(
+    name="faq_retrieval",
+    description="Retrieve FAQ answers for general service or travel knowledge questions.",
+    input_fields=["query", "top_k", "request_id"],
+    callable=lambda **kwargs: _lazy_faq_retrieval(**kwargs),
+)
+
+
+def _lazy_faq_retrieval(**kwargs):
+    from services.tools.faq_retrieval_tool import faq_retrieval_tool
+    return faq_retrieval_tool(**kwargs)
+
+
+_registry.register(
+    name="booking_policy_lookup",
+    description="Look up cancellation, refund, payment, booking, document, or support policies.",
+    input_fields=["query", "top_k", "request_id"],
+    callable=lambda **kwargs: _lazy_booking_policy_lookup(**kwargs),
+)
+
+
+def _lazy_booking_policy_lookup(**kwargs):
+    from services.tools.booking_policy_lookup_tool import booking_policy_lookup_tool
+    return booking_policy_lookup_tool(**kwargs)
+
+
+_registry.register(
     name="fallback_response",
     description="Provides a greeting or out-of-domain fallback message when no other tool matches.",
     input_fields=["query", "entities", "request_id"],

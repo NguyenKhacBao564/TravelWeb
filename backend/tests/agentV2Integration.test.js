@@ -16,6 +16,7 @@ const {
   buildFallback,
   mapAgentStatus,
   extractTourList,
+  extractFaqSources,
 } = require("../services/agentV2ResponseMapper");
 
 test("mapAgentStatus maps success → success", () => {
@@ -133,6 +134,93 @@ test("mapAgentV2ToFrontend maps no_results status", () => {
 
   assert.equal(result.status, "no_results");
   assert.equal(result.tourlist.length, 0);
+});
+
+test("extractFaqSources maps hits to faq_sources", () => {
+  const sources = extractFaqSources({
+    data: {
+      hits: [
+        {
+          title: "Hủy tour?",
+          snippet: "Có thể hủy trước 7 ngày.",
+          score: 0.85,
+          source: "faq_metadata:1",
+          tags: ["huy-tour"],
+        },
+      ],
+    },
+  });
+
+  assert.equal(sources.length, 1);
+  assert.equal(sources[0].question, "Hủy tour?");
+  assert.equal(sources[0].answer, "Có thể hủy trước 7 ngày.");
+  assert.equal(sources[0].score, 0.85);
+  assert.deepEqual(sources[0].tags, ["huy-tour"]);
+});
+
+test("mapAgentV2ToFrontend maps faq_retrieval hits to faq_sources", () => {
+  const result = mapAgentV2ToFrontend({
+    status: "faq",
+    message: "TourGuide là hướng dẫn viên du lịch.",
+    selected_tool: "faq_retrieval",
+    route_source: "deterministic",
+    entities: {},
+    tool_trace: [
+      {
+        step: 1,
+        selected_tool: "faq_retrieval",
+        tool_status: "success",
+        latency_ms: 42.0,
+        error_type: null,
+        result_summary: "faq_retrieval returned 1 hit(s)",
+      },
+    ],
+    data: {
+      hits: [
+        {
+          title: "TourGuide là gì?",
+          snippet: "TourGuide là hướng dẫn viên du lịch.",
+          score: 0.9,
+          source: "faq_metadata:0",
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.status, "faq");
+  assert.equal(result.faq_sources.length, 1);
+  assert.equal(result.faq_sources[0].question, "TourGuide là gì?");
+  assert.equal(result.search_metadata.selected_tool, "faq_retrieval");
+  assert.equal(result.search_metadata.route_source, "deterministic");
+  assert.ok(Array.isArray(result.tool_trace));
+  assert.equal(result.tool_trace[0].selected_tool, "faq_retrieval");
+});
+
+test("mapAgentV2ToFrontend maps booking_policy_lookup hits to faq_sources", () => {
+  const result = mapAgentV2ToFrontend({
+    status: "faq",
+    message: "Có thể hủy tour trước 7 ngày.",
+    selected_tool: "booking_policy_lookup",
+    route_source: "deterministic",
+    entities: {},
+    tool_trace: [],
+    data: {
+      policy_category: "cancellation",
+      hits: [
+        {
+          title: "Hủy tour được không?",
+          snippet: "Có thể hủy tour trước 7 ngày.",
+          score: 0.8,
+          source: "faq_metadata:2",
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.status, "faq");
+  assert.equal(result.faq_sources.length, 1);
+  assert.equal(result.faq_sources[0].answer, "Có thể hủy tour trước 7 ngày.");
+  assert.equal(result.search_metadata.selected_tool, "booking_policy_lookup");
 });
 
 test("mapAgentV2ToFrontend maps fallback status to faq", () => {

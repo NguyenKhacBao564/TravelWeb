@@ -15,6 +15,8 @@ from agent.tool_registry import get_registry
 
 logger = logging.getLogger(__name__)
 
+_RETRIEVAL_TOOLS = frozenset({"faq_retrieval", "booking_policy_lookup"})
+
 
 def _build_memory_context(memory) -> dict:
     """Build a safe memory context dict for the router (no PII, no raw text)."""
@@ -66,7 +68,21 @@ def _result_summary(tool_name: str, tool_result: dict) -> str:
         msg = (data.get("message") or "") if isinstance(data, dict) else ""
         return msg[:80] + ("..." if len(msg) > 80 else "")
 
+    if tool_name in _RETRIEVAL_TOOLS:
+        hits = tool_result.get("hits") or []
+        return f"{tool_name} returned {len(hits)} hit(s)"
+
     return f"{tool_name} ok"
+
+
+def _normalize_tool_data(tool_name: str, tool_result: dict) -> dict | None:
+    """Build AgentResponse.data from a tool result."""
+    if tool_name in _RETRIEVAL_TOOLS:
+        data: dict = {"hits": tool_result.get("hits") or []}
+        if tool_name == "booking_policy_lookup":
+            data["policy_category"] = tool_result.get("policy_category")
+        return data
+    return tool_result.get("data")
 
 
 def run(request: AgentRequest) -> AgentResponse:
@@ -175,27 +191,42 @@ def run(request: AgentRequest) -> AgentResponse:
 
     # Step 7: build response
     ok = tool_result.get("ok", False)
-    data = tool_result.get("data") if ok else None
     tool_status_for_response = tool_result.get("status", "error")
+    data = _normalize_tool_data(selected_tool, tool_result) if ok else None
 
-    if tool_status_for_response == "fallback":
+    if selected_tool in _RETRIEVAL_TOOLS:
+        if not ok:
+            final_status = "error"
+            message = tool_result.get("message") or _build_fallback_message(merged_entities, "error")
+        elif tool_status_for_response == "no_results":
+            final_status = "faq"
+            message = tool_result.get("message") or _build_fallback_message(merged_entities, "no_results")
+        else:
+            final_status = "faq"
+            message = tool_result.get("message") or _build_fallback_message(merged_entities, "success")
+    elif tool_status_for_response == "fallback":
+        raw_data = tool_result.get("data")
         final_status = "fallback"
         message = (
-            (data.get("message") if isinstance(data, dict) else str(data))
-            if data else _build_fallback_message(merged_entities, "error")
+            (raw_data.get("message") if isinstance(raw_data, dict) else str(raw_data))
+            if raw_data else _build_fallback_message(merged_entities, "error")
         )
+        data = raw_data
     elif not ok:
         final_status = "error"
         message = _build_fallback_message(merged_entities, "error")
+        data = None
     elif data and isinstance(data, dict) and data.get("total", 0) == 0:
         final_status = "no_results"
         message = _build_fallback_message(merged_entities, "no_results")
     elif selected_tool == "fallback_response":
+        raw_data = tool_result.get("data")
         final_status = "fallback"
         message = (
-            (data.get("message") if isinstance(data, dict) else str(data))
-            if data else _build_fallback_message(merged_entities, "error")
+            (raw_data.get("message") if isinstance(raw_data, dict) else str(raw_data))
+            if raw_data else _build_fallback_message(merged_entities, "error")
         )
+        data = raw_data
     else:
         final_status = "success"
         if data and isinstance(data, dict) and data.get("message"):

@@ -37,6 +37,23 @@ const mapAgentStatus = (agentStatus) => {
   }
 };
 
+/** Extract faq_sources from AgentResponse.data.hits (FAQ/policy retrieval tools). */
+const extractFaqSources = (agentResponse) => {
+  const data = agentResponse?.data;
+  if (!data || typeof data !== "object") return [];
+
+  const hits = data.hits;
+  if (!Array.isArray(hits)) return [];
+
+  return hits.map((hit) => ({
+    question: hit.title || hit.question || "",
+    answer: hit.snippet || hit.answer || "",
+    tags: Array.isArray(hit.tags) ? hit.tags : [],
+    score: hit.score ?? null,
+    source: hit.source || null,
+  }));
+};
+
 /** Extract tourlist from AgentResponse.data, normalizing various shapes. */
 const extractTourList = (data) => {
   if (!data || typeof data !== "object") return [];
@@ -113,7 +130,7 @@ const mapAgentV2ToFrontend = (agentResponse) => {
     entities,
     missing_fields: [],
     tourlist,
-    faq_sources: [],
+    faq_sources: extractFaqSources(agentResponse),
     search_metadata: searchMetadata,
     fallback_used: status === "ai_unavailable",
   };
@@ -171,4 +188,5 @@ module.exports = {
   buildFallback,
   mapAgentStatus,
   extractTourList,
+  extractFaqSources,
 };
