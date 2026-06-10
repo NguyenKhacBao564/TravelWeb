@@ -5,6 +5,7 @@ import re
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
+from typing import Optional
 import uvicorn
 
 from pipelines.tour_pipeline import TourRetrievalPipeline
@@ -122,6 +123,40 @@ async def ready():
 @app.post("/chat")
 async def handle_query(request: QueryRequest):
     return get_pipeline().get_tour_response(request.query, user_id=request.user_id)
+
+
+# --- Agent v2 (deterministic tool-routing, additive — does not replace /chat) ---
+
+class AgentChatV2Request(BaseModel):
+    query: str = Field(..., min_length=1, max_length=500)
+    user_id: Optional[str] = Field(default=None, max_length=100)
+    session_id: Optional[str] = Field(default=None, max_length=100)
+
+    @field_validator("query")
+    @classmethod
+    def validate_query(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("query must not be empty")
+        return stripped
+
+
+@app.post("/agent/chat-v2")
+async def agent_chat_v2(request: AgentChatV2Request):
+    """
+    Deterministic tool-routing agent (Phase 2A).
+
+    Runs in parallel with POST /chat and does not replace it.
+    Returns AgentResponse with tool_trace.
+    """
+    from agent import AgentRequest, run
+
+    agent_request = AgentRequest(
+        query=request.query,
+        user_id=request.user_id,
+        session_id=request.session_id,
+    )
+    return run(agent_request)
 
 
 @app.post("/reset")

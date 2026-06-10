@@ -369,6 +369,87 @@ If `ok: false` and `error_type: missing_config`, the token is not set. If `auth_
 
 ---
 
+## POST /agent/chat-v2 (Phase 2A — Experimental)
+
+A deterministic tool-routing agent that runs **in parallel with** `POST /chat` and does not replace it. Uses rule-based routing to select `search_tours`, `get_tour_detail`, or `fallback_response`, and returns a structured response with `tool_trace`.
+
+### Prerequisites
+
+Both services need matching `INTERNAL_SERVICE_TOKEN`:
+
+```bash
+# backend/.env
+INTERNAL_SERVICE_TOKEN=your_secure_token_here
+PYTHON_CHATBOT_URL=http://localhost:8000/chat
+```
+
+```bash
+# services/ai-agent/.env
+EXPRESS_API_URL=http://localhost:3001
+INTERNAL_SERVICE_TOKEN=your_secure_token_here
+INTERNAL_TOOL_TIMEOUT_SECONDS=5
+```
+
+### Smoke test
+
+```bash
+# AI Agent must be running (Terminal 1)
+npm run dev:agent
+
+# Backend must be running (Terminal 2)
+npm run dev:backend
+
+# curl /agent/chat-v2
+curl -s -X POST http://localhost:8000/agent/chat-v2 \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Tôi muốn tìm tour Đà Lạt dưới 5 triệu"}'
+```
+
+**Expected response shape:**
+
+```json
+{
+  "status": "success",
+  "message": "Em hiểu bạn muốn tìm tour địa điểm Đà Lạt ngân sách 5.000.000đ...",
+  "selected_tool": "search_tours",
+  "entities": {
+    "location": "Đà Lạt",
+    "price_max": 5000000
+  },
+  "tool_trace": [
+    {
+      "step": 1,
+      "selected_tool": "search_tours",
+      "tool_status": "success",
+      "latency_ms": 123.4,
+      "error_type": null,
+      "result_summary": "search_tours returned 2 tour(s)"
+    }
+  ],
+  "data": { ... }
+}
+```
+
+### Routing rules
+
+| Query pattern | Tool selected |
+|---------------|-------------|
+| Greeting ("xin chào", "chào bạn", "hello") | `fallback_response` |
+| Out-of-domain keywords | `fallback_response` |
+| Tour ID pattern (`TOUR001`, `tour_id: XYZ`) | `get_tour_detail` |
+| Tour search keywords ("tìm tour", "đặt tour", "tour nào") | `search_tours` |
+| Location/price/time entities found | `search_tours` |
+| Nothing matched | `fallback_response` |
+
+### Notes
+
+- `POST /chat` is **unchanged** and remains the primary chat endpoint.
+- `/agent/chat-v2` is experimental and additive.
+- Tool execution is limited to one tool per request in Phase 2A.
+- Gemini is not called during routing — routing is deterministic rule-based.
+
+---
+
 ## Test Results Summary
 
 | Test | Command | Pass Criterion |
