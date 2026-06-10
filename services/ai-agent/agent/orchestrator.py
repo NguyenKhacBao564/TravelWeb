@@ -8,7 +8,7 @@ import logging
 import time
 from typing import Any
 
-from agent.router import RouteDecision, get_router
+from agent.router import RouteDecision, get_router, get_router_mode
 from agent.schemas import AgentRequest, AgentResponse, AgentToolTrace
 from agent.tool_registry import get_registry
 
@@ -62,10 +62,10 @@ def run(request: AgentRequest) -> AgentResponse:
     """
     Main orchestrator entry point.
 
-    1. Route the query to a tool
+    1. Route the query to a tool (mode-aware)
     2. Validate the tool is registered
     3. Execute it (max one tool in Phase 2A)
-    4. Build AgentResponse with tool_trace
+    4. Build AgentResponse with tool_trace and route_source
     """
     router = get_router()
     registry = get_registry()
@@ -73,6 +73,7 @@ def run(request: AgentRequest) -> AgentResponse:
     # Step 1: route
     decision = router.route(request.query)
     selected_tool = decision.tool_name
+    route_source = decision.route_source or get_router_mode()
 
     # Step 2: validate
     tool_def = registry.get(selected_tool)
@@ -155,4 +156,5 @@ def run(request: AgentRequest) -> AgentResponse:
         entities=decision.entities,
         tool_trace=tool_trace,
         data=data,
+        route_source=route_source,
     )

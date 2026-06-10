@@ -525,6 +525,75 @@ curl -s -X POST http://localhost:3001/chat/chatbot \
 
 ---
 
+## Phase 2C: Gemini Structured Routing
+
+Three router modes are available via `AGENT_ROUTER_MODE`:
+
+| Mode | Description |
+|------|-------------|
+| `deterministic` (default) | Rule-based keyword/pattern matching. No API key needed. |
+| `gemini` | Gemini structured JSON for all queries. Falls back to deterministic on error. |
+| `hybrid` | Deterministic for clear cases (greeting, tour_id, out-of-domain); Gemini for ambiguous travel queries. |
+
+### Environment setup
+
+```bash
+# services/ai-agent/.env
+# Router mode (deterministic | gemini | hybrid)
+AGENT_ROUTER_MODE=deterministic
+
+# Gemini routing only (requires GEMINI_API_KEY or GOOGLE_API_KEY):
+GEMINI_ROUTER_MODEL=gemini-2.0-flash
+GEMINI_ROUTER_TIMEOUT_SECONDS=8
+
+# Express must be configured:
+EXPRESS_API_URL=http://localhost:3001
+INTERNAL_SERVICE_TOKEN=your_secure_token_here
+```
+
+### Smoke test — deterministic mode (default)
+
+```bash
+curl -s -X POST http://localhost:8000/agent/chat-v2 \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Tìm tour Đà Lạt dưới 5 triệu"}'
+```
+
+Expected `route_source: "deterministic"` in response.
+
+### Smoke test — gemini mode
+
+```bash
+# Requires GEMINI_API_KEY in services/ai-agent/.env
+curl -s -X POST http://localhost:8000/agent/chat-v2 \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Cho tôi tìm tour Nha Trang tháng 8"}'
+```
+
+Expected `route_source: "gemini"` in response on success, or `route_source: "deterministic_fallback"` on Gemini failure.
+
+### Expected response (with route_source)
+
+```json
+{
+  "status": "success",
+  "message": "...",
+  "selected_tool": "search_tours",
+  "entities": { "location": "Đà Lạt", "price_max": 5000000 },
+  "tool_trace": [...],
+  "route_source": "gemini",
+  "data": {...}
+}
+```
+
+### Fallback behavior
+
+- `gemini` mode: JSON parse error, unknown tool, timeout, or API error → `route_source: "deterministic_fallback"` (deterministic router handles it)
+- `hybrid` mode: same as gemini
+- No chain-of-thought is ever exposed in `route_source`, `tool_trace`, or any response field.
+
+---
+
 ## Test Results Summary
 
 | Test | Command | Pass Criterion |

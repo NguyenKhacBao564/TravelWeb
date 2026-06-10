@@ -10,10 +10,13 @@ Routing logic:
 
 Extraction uses lightweight existing extractors where available.
 """
+from __future__ import annotations
+
 import logging
+import os
 import re
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from pydantic import BaseModel
 
@@ -29,6 +32,7 @@ class RouteDecision:
     tool_name: str
     entities: dict = field(default_factory=dict)
     reason: str = ""
+    route_source: str = "deterministic"
 
 
 @dataclass
@@ -231,11 +235,36 @@ class DeterministicRouter:
 
 
 # ---------------------------------------------------------------------------
-# Singleton
+# Singleton factory
 # ---------------------------------------------------------------------------
+
+def _build_router():
+    mode = os.getenv("AGENT_ROUTER_MODE", "deterministic").lower()
+    if mode == "gemini":
+        from agent.gemini_router import gemini_route
+        return _GeminiProxyRouter()
+    if mode == "hybrid":
+        from agent.hybrid_router import HybridRouter
+        return HybridRouter()
+    # deterministic (default)
+    return _router
+
+
+class _GeminiProxyRouter:
+    """Wrapper that calls gemini_route and returns a RouteDecision."""
+
+    def route(self, query: str):
+        from agent.gemini_router import gemini_route
+        return gemini_route(query)
+
 
 _router = DeterministicRouter()
 
 
-def get_router() -> DeterministicRouter:
-    return _router
+def get_router() -> "DeterministicRouter | _GeminiProxyRouter | HybridRouter":
+    return _build_router()
+
+
+def get_router_mode() -> str:
+    """Return the active router mode string."""
+    return os.getenv("AGENT_ROUTER_MODE", "deterministic").lower()

@@ -52,3 +52,7 @@ class AgentResponse(BaseModel):
     entities: dict[str, Any] = Field(default_factory=dict)
     tool_trace: list[AgentToolTrace] = Field(default_factory=list)
     data: Optional[dict[str, Any]] = Field(default=None)
+    route_source: Optional[str] = Field(
+        default=None,
+        description="Router mode used: deterministic | gemini | deterministic_fallback | gemini_fallback"
+    )
