@@ -14,7 +14,19 @@ const EMPTY_INSIGHTS = {
   faq_opportunities_count: 0,
   no_result_searches: 0,
   avg_latency_ms: null,
+  p95_latency_ms: null,
   recent_events: [],
+  // Agent V2 aggregates (Phase 3A+)
+  total_sessions: 0,
+  agent_v2_requests: 0,
+  agent_v2_rate: 0,
+  memory_used_count: 0,
+  memory_used_rate: 0,
+  selected_tool_distribution: {},
+  route_source_distribution: {},
+  tool_status_distribution: {},
+  tool_error_distribution: {},
+  fallback_reason_distribution: {},
 };
 
 export const fetchChatInsights = async ({ limit = 200 } = {}) => {

@@ -105,6 +105,13 @@ const createGetRespondChat = (dependencies = {}) => {
           })
         );
 
+        // Extract tool trace summary for analytics (Phase 3B)
+        const toolTrace = frontendResponse.tool_trace;
+        const firstTraceStep = Array.isArray(toolTrace) && toolTrace.length > 0 ? toolTrace[0] : null;
+        const toolLatencyMs = firstTraceStep?.latency_ms ?? null;
+        const toolStatus = firstTraceStep?.tool_status ?? null;
+        const toolErrorType = firstTraceStep?.error_type ?? null;
+
         // Fire-and-forget analytics
         try {
           logAnalytics({
@@ -118,6 +125,16 @@ const createGetRespondChat = (dependencies = {}) => {
             latencyMs: totalLatency,
             entities: frontendResponse.entities || {},
             searchMetadata: frontendResponse.search_metadata || null,
+            // Agent V2 fields (Phase 3A+)
+            agentV2Enabled: true,
+            sessionId: frontendResponse.session_id || null,
+            routeSource: frontendResponse.search_metadata?.route_source || null,
+            memoryUsed: frontendResponse.memory_used || false,
+            selectedTool: frontendResponse.search_metadata?.selected_tool || null,
+            toolStatus,
+            toolErrorType,
+            toolLatencyMs,
+            toolTrace,
           });
         } catch {
           // Swallow — analytics failure must never break the chat response.

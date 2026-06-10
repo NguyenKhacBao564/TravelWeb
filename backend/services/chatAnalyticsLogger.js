@@ -5,6 +5,7 @@
  * Failures are silently swallowed so logging never breaks the chat response.
  *
  * Privacy-safe: stores query_len, never the raw query text.
+ * Agent V2 fields (Phase 3A+) are optional — old entries remain compatible.
  */
 const fs = require("fs");
 const path = require("path");
@@ -42,20 +43,38 @@ const appendLog = (entry) => {
 };
 
 /**
+ * Summarises the first tool trace step safely for analytics.
+ * Never exposes chain-of-thought or raw reasoning.
+ *
+ * @param {Array} toolTrace
+ * @returns {{ selected_tool: string|null, tool_status: string|null, error_type: string|null }|null}
+ */
+const summariseToolTrace = (toolTrace) => {
+  if (!Array.isArray(toolTrace) || toolTrace.length === 0) {
+    return null;
+  }
+  const first = toolTrace[0];
+  return {
+    selected_tool: first.selected_tool || null,
+    tool_status: first.tool_status || null,
+    error_type: first.error_type || null,
+  };
+};
+
+/**
  * Logs a chat event after the response has been sent.
  * Safe to call with a subset of fields — missing fields are omitted from the line.
  *
+ * Legacy fields (always written when present):
+ *   query_len, userId, pythonStatus, finalStatus, fallbackUsed, toursCount,
+ *   latencyMs, entities, searchMetadata
+ *
+ * Agent V2 fields (Phase 3A+, written when available):
+ *   sessionId, agentV2Enabled, routeSource, memoryUsed,
+ *   selectedTool, toolStatus, toolErrorType, toolTraceCount,
+ *   fallbackReason, toolLatencyMs
+ *
  * @param {object} params
- * @param {string}       params.userId        — normalized user ID
- * @param {string}       params.query         — raw query text
- * @param {string}       params.requestId     — unique request ID (req.requestId)
- * @param {string}       params.pythonStatus  — status from Python chatbot
- * @param {string}       params.finalStatus   — resolved final status
- * @param {boolean}      params.fallbackUsed  — true when AI was unavailable
- * @param {number}       params.toursCount    — number of tours returned
- * @param {number}       params.latencyMs     — total request latency ms
- * @param {object}       [params.entities]   — extracted entities map
- * @param {object|null}  [params.searchMetadata] — from Python payload
  */
 const logChatEvent = ({
   userId,
@@ -68,6 +87,17 @@ const logChatEvent = ({
   latencyMs,
   entities = {},
   searchMetadata = null,
+  // Agent V2 optional fields (Phase 3A+)
+  sessionId = undefined,
+  agentV2Enabled = false,
+  routeSource = undefined,
+  memoryUsed = undefined,
+  selectedTool = undefined,
+  toolStatus = undefined,
+  toolErrorType = undefined,
+  fallbackReason = undefined,
+  toolLatencyMs = undefined,
+  toolTrace = undefined,
 }) => {
   if (!ANALYTICS_ENABLED) return;
 
@@ -94,7 +124,29 @@ const logChatEvent = ({
     faq_opportunity: searchMetadata?.faq_opportunity || null,
   };
 
+  // Agent V2 fields — only written when agent_v2_enabled or sessionId is set
+  if (agentV2Enabled || sessionId) {
+    // Summarise tool trace if present
+    const traceSummary = toolTrace ? summariseToolTrace(toolTrace) : null;
+
+    entry.agent_v2_enabled = agentV2Enabled;
+    entry.session_id = sessionId || null;
+    entry.route_source = routeSource || null;
+    entry.memory_used = typeof memoryUsed === "boolean" ? memoryUsed : null;
+    entry.selected_tool = selectedTool || traceSummary?.selected_tool || null;
+    entry.tool_status = toolStatus || traceSummary?.tool_status || null;
+    entry.tool_error_type = toolErrorType || traceSummary?.error_type || null;
+    entry.fallback_reason = fallbackReason || null;
+    entry.tool_latency_ms = typeof toolLatencyMs === "number" ? toolLatencyMs : null;
+    entry.tool_trace_count = Array.isArray(toolTrace) ? toolTrace.length : null;
+  }
+
   appendLog(entry);
 };
 
-module.exports = { logChatEvent, ANALYTICS_ENABLED, LOG_PATH };
+module.exports = {
+  logChatEvent,
+  ANALYTICS_ENABLED,
+  LOG_PATH,
+  summariseToolTrace,
+};

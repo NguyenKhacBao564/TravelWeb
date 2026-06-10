@@ -704,6 +704,89 @@ Expected: new `session_id` in response, `memory_used: false`.
 
 ---
 
+## Phase 3B: Admin AI Insights — Agent V2 Metrics
+
+Admin can view Agent V2 analytics in the Admin dashboard (`/admin/ai-chat-insights`). Metrics are derived from JSONL analytics log and require no database migration.
+
+### Prerequisites
+
+Ensure `CHAT_ANALYTICS_ENABLED=true` in `backend/.env` and `CHAT_AGENT_V2_ENABLED=true` to generate Agent V2 log entries.
+
+### Generate sample Agent V2 events
+
+```bash
+# Make sure analytics is enabled
+export CHAT_ANALYTICS_ENABLED=true
+export CHAT_AGENT_V2_ENABLED=true
+
+# Turn 1 — Agent V2 request with no memory
+curl -s -X POST http://localhost:3001/chat/chatbot \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Tìm tour Đà Lạt tháng 7"}' | jq '.session_id'
+
+# Turn 2 — same session, memory used
+curl -s -X POST http://localhost:3001/chat/chatbot \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Dưới 5 triệu, đi 2 người", "session_id": "<uuid-from-above>"}'
+
+# Turn 3 — follow-up, memory followup routing
+curl -s -X POST http://localhost:3001/chat/chatbot \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Còn tour nào nữa không", "session_id": "<uuid>"}'
+
+# Turn 4 — fallback response
+curl -s -X POST http://localhost:3001/chat/chatbot \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Xin chào"}'
+```
+
+### Open Admin AI Insights
+
+1. Log in as Admin
+2. Navigate to `/admin/ai-chat-insights`
+3. Wait for data to load (reads from `logs/chat_analytics.jsonl`)
+
+### Expected metrics
+
+After generating events above, the following fields should appear in the dashboard:
+
+| Metric | Field | Expected value |
+|--------|-------|---------------|
+| Total Agent V2 requests | `agent_v2_requests` | ≥ 3 |
+| Agent V2 rate | `agent_v2_rate` | Ratio of agent_v2 to total chats |
+| Distinct sessions | `total_sessions` | ≥ 1 |
+| Memory used count | `memory_used_count` | ≥ 1 |
+| Memory used rate | `memory_used_rate` | Ratio within agent_v2 |
+| Top selected tool | `selected_tool_distribution` | `search_tours` dominant |
+| Route source | `route_source_distribution` | `deterministic` |
+| Tool status | `tool_status_distribution` | `success` |
+| Tool errors | `tool_error_distribution` | Errors from failed tool calls |
+| p95 latency | `p95_latency_ms` | `p95` of all request latencies |
+| Fallback reasons | `fallback_reason_distribution` | For fallback status responses |
+| Recent events table | `recent_events` | Agent fields visible in table |
+
+### Key implementation notes
+
+- **Privacy-safe**: no raw query text, no chain-of-thought, no secrets in logs
+- **Backward compatible**: legacy log entries (without Agent V2 fields) aggregate normally
+- **Fire-and-forget**: analytics errors never break chat responses
+- **No DB**: all aggregation is pure JSONL file parsing
+- **JSONL fields logged**: `agent_v2_enabled`, `session_id`, `route_source`, `memory_used`, `selected_tool`, `tool_status`, `tool_error_type`, `fallback_reason`, `tool_latency_ms`, `tool_trace_count`
+
+### Manual dashboard check
+
+1. Start backend: `cd backend && npm run dev`
+2. Enable analytics: set `CHAT_ANALYTICS_ENABLED=true`
+3. Send a few Agent V2 requests (see above)
+4. Open Admin dashboard → AI Chat Insights
+5. Verify:
+   - New stat cards: Agent V2 Requests, Memory Used, Sessions, p95 Latency
+   - New distribution tables visible (if Agent V2 data exists)
+   - Recent events table shows Tool, Tool Status, Memory columns
+   - Legacy stats (Total Chats, Fallback, etc.) remain visible
+
+---
+
 ## Test Results Summary
 
 | Test | Command | Pass Criterion |

@@ -54,6 +54,7 @@ const extractTourList = (data) => {
 const buildSearchMetadata = (agentResponse) => {
   const meta = {
     selected_tool: agentResponse.selected_tool || null,
+    route_source: agentResponse.route_source || null,
   };
 
   if (agentResponse.data && typeof agentResponse.data === "object") {

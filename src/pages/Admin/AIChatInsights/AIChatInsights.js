@@ -5,6 +5,10 @@ import {
   HelpCircle,
   SearchX,
   Timer,
+  Bot,
+  Brain,
+  Zap,
+  ShieldAlert,
 } from "lucide-react";
 import StatCard from "../../../components/Admin/StatCard";
 import {
@@ -25,6 +29,11 @@ const formatLatency = (value) => {
   return `${value} ms`;
 };
 
+const formatRate = (value) => {
+  if (value == null) return "—";
+  return `${Math.round((value || 0) * 100)}%`;
+};
+
 const statusBadgeClass = (status) => {
   if (!status) return "ai-insights__badge";
   const s = String(status).toLowerCase();
@@ -35,6 +44,15 @@ const statusBadgeClass = (status) => {
     return "ai-insights__badge ai-insights__badge--fallback";
   }
   return "ai-insights__badge";
+};
+
+const toolStatusBadgeClass = (status) => {
+  if (!status) return "ai-insights__badge";
+  const s = String(status).toLowerCase();
+  if (s === "success") {
+    return "ai-insights__badge";
+  }
+  return "ai-insights__badge ai-insights__badge--error";
 };
 
 const DistributionTable = ({ title, data, labelHeader = "Giá trị" }) => {
@@ -110,7 +128,12 @@ const AIChatInsights = () => {
   }
 
   const data = insights || {};
-  const noData = (data.total_chats ?? 0) === 0 && logs.length === 0;
+  const hasAgentV2Data =
+    (data.agent_v2_requests ?? 0) > 0 ||
+    (data.total_sessions ?? 0) > 0 ||
+    Object.keys(data.selected_tool_distribution || {}).length > 0;
+  const noData =
+    (data.total_chats ?? 0) === 0 && logs.length === 0 && !hasAgentV2Data;
 
   return (
     <div className="ai-insights">
@@ -142,6 +165,7 @@ const AIChatInsights = () => {
         </div>
       ) : (
         <>
+          {/* --- Legacy stats --- */}
           <div className="ai-insights__stats">
             <StatCard
               variant="primary"
@@ -181,6 +205,77 @@ const AIChatInsights = () => {
             />
           </div>
 
+          {/* --- Agent V2 stats (Phase 3A+) --- */}
+          <div className="ai-insights__stats">
+            <StatCard
+              variant="primary"
+              icon={<Bot />}
+              title="Agent V2 Requests"
+              value={data.agent_v2_requests ?? 0}
+              suffix={
+                data.agent_v2_rate != null
+                  ? ` (${formatRate(data.agent_v2_rate)})`
+                  : ""
+              }
+            />
+            <StatCard
+              variant="secondary"
+              icon={<Brain />}
+              title="Memory Used"
+              value={data.memory_used_count ?? 0}
+              suffix={
+                data.memory_used_rate != null
+                  ? ` (${formatRate(data.memory_used_rate)})`
+                  : ""
+              }
+            />
+            <StatCard
+              variant="tertiary"
+              icon={<ShieldAlert />}
+              title="Sessions"
+              value={data.total_sessions ?? 0}
+            />
+            <StatCard
+              variant="primary"
+              icon={<Zap />}
+              title="p95 Latency"
+              value={data.p95_latency_ms ?? "—"}
+              suffix={data.p95_latency_ms != null ? " ms" : ""}
+            />
+          </div>
+
+          {/* --- Agent V2 distributions --- */}
+          {hasAgentV2Data && (
+            <div className="ai-insights__grid">
+              <DistributionTable
+                title="Selected Tool"
+                data={data.selected_tool_distribution}
+                labelHeader="Tool"
+              />
+              <DistributionTable
+                title="Route Source"
+                data={data.route_source_distribution}
+                labelHeader="Router"
+              />
+              <DistributionTable
+                title="Tool Status"
+                data={data.tool_status_distribution}
+                labelHeader="Status"
+              />
+              <DistributionTable
+                title="Tool Errors"
+                data={data.tool_error_distribution}
+                labelHeader="Error"
+              />
+              <DistributionTable
+                title="Fallback Reasons"
+                data={data.fallback_reason_distribution}
+                labelHeader="Reason"
+              />
+            </div>
+          )}
+
+          {/* --- Legacy distributions --- */}
           <div className="ai-insights__grid">
             <DistributionTable
               title="Phân bố trạng thái"
@@ -222,6 +317,7 @@ const AIChatInsights = () => {
             </div>
           </div>
 
+          {/* --- Recent events table --- */}
           <div className="ai-insights__card">
             <h3>Sự kiện gần đây ({logs.length})</h3>
             {logs.length === 0 ? (
@@ -239,7 +335,9 @@ const AIChatInsights = () => {
                       <th>Intent</th>
                       <th>Category</th>
                       <th style={{ textAlign: "right" }}>Tours</th>
-                      <th>Fallback</th>
+                      <th>Tool</th>
+                      <th>Tool Status</th>
+                      <th>Memory</th>
                       <th style={{ textAlign: "right" }}>Latency</th>
                     </tr>
                   </thead>
@@ -261,10 +359,32 @@ const AIChatInsights = () => {
                           {log.tours_count ?? 0}
                         </td>
                         <td>
-                          {log.fallback_used ? (
-                            <span className="ai-insights__badge ai-insights__badge--fallback">
-                              Có
+                          {log.selected_tool ? (
+                            <span className="ai-insights__badge">
+                              {log.selected_tool}
                             </span>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+                        <td>
+                          {log.tool_status ? (
+                            <span
+                              className={toolStatusBadgeClass(log.tool_status)}
+                            >
+                              {log.tool_status}
+                            </span>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+                        <td>
+                          {log.memory_used === true ? (
+                            <span className="ai-insights__badge">
+                              {log.memory_used}
+                            </span>
+                          ) : log.memory_used === false ? (
+                            <span>—</span>
                           ) : (
                             "—"
                           )}
