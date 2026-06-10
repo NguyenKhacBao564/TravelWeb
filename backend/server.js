@@ -23,6 +23,7 @@ const scheduleRoutes = require("./routes/scheduleRoutes");
 const customerSupportRoutes = require("./routes/customerSupportRoutes");
 const consultantSupportRoutes = require("./routes/consultantSupportRoutes");
 const chatRoutes = require("./routes/chatRoutes");
+const internalToolRoutes = require("./routes/internalToolRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const favoriteTourRoutes = require("./routes/favoriteTourRoutes");
 const historyBookingRoutes = require("./routes/historyBookingRoutes");
@@ -63,6 +64,7 @@ app.use("/reset-password", resetPasswordRoutes); // Route cho reset password
 app.use("/api/customer", customerSupportRoutes); // Thêm route cho support
 app.use("/api/consultant", consultantSupportRoutes);
 app.use("/reviews", reviewRoutes);
+app.use("/internal/tools", internalToolRoutes);
 
 // Health check endpoint for Docker
 // Mounted ONLY at /api/health (not /chat/health) to avoid routing conflict

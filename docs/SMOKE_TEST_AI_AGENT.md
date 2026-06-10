@@ -221,6 +221,80 @@ Non-Admin users get `403 Forbidden`.
 
 ---
 
+## Internal Tool Endpoints (for AI Agent)
+
+Internal endpoints at `/internal/tools/` are used by the Python AI Agent for tool-calling. They require `INTERNAL_SERVICE_TOKEN` in `backend/.env`.
+
+### Setup
+
+Add the internal service token to your backend `.env`:
+
+```bash
+# backend/.env
+INTERNAL_SERVICE_TOKEN=your_secure_token_here
+```
+
+### Test Auth Rejection (no token)
+
+```bash
+# Returns 401/403 — correct behavior
+curl -s http://localhost:3001/internal/tools/search-tours?location=DaLat
+curl -s http://localhost:3001/internal/tools/tour/TOUR001
+```
+
+### Test search-tours with valid token
+
+```bash
+curl -s "http://localhost:3001/internal/tools/search-tours?location=DaLat&price_min=3000000&price_max=6000000" \
+  -H "Authorization: Bearer your_secure_token_here"
+```
+
+**Expected shape:**
+
+```json
+{
+  "status": "success",
+  "tool": "search_tours",
+  "input": { "location": "DaLat", "price_min": 3000000, "price_max": 6000000, "limit": 5 },
+  "total": 2,
+  "tours": [...],
+  "search_metadata": { "has_filters": true, "location": "DaLat", ... }
+}
+```
+
+### Test get-tour-detail with valid token
+
+```bash
+curl -s http://localhost:3001/internal/tools/tour/TOUR001 \
+  -H "Authorization: Bearer your_secure_token_here"
+```
+
+**Expected shape (tour found):**
+
+```json
+{
+  "status": "success",
+  "tool": "get_tour_detail",
+  "tour": { "tour_id": "TOUR001", "name": "...", ... },
+  "schedules": [{ "day_number": 1, "description": "...", "meals": "..." }],
+  "prices": [{ "age_group": "adultPrice", "price": 4200000 }]
+}
+```
+
+**Expected shape (not found):**
+
+```json
+{
+  "status": "not_found",
+  "tool": "get_tour_detail",
+  "tour": null,
+  "schedules": [],
+  "prices": []
+}
+```
+
+---
+
 ## Test Results Summary
 
 | Test | Command | Pass Criterion |
